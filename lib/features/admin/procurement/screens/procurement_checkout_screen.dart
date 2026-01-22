@@ -43,7 +43,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminScaffold(
-      title: 'Checkout',
+      title: 'Procurement Details',
       currentRoute: AppRouter.adminProcurement,
       body: Consumer<ProcurementProvider>(
         builder: (context, provider, child) {
@@ -105,6 +105,12 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   }
 
   Widget _buildContent(dynamic order) {
+    // ✅ CHECK: Ako je order već plaćen ili primljen, prikaži samo detalje
+    if (order.status == 'Paid' || order.status == 'Received') {
+      return _buildPaidOrderDetails(order);
+    }
+
+    // Za Pending status - prikaži checkout proces
     return Column(
       children: [
         _buildStepIndicator(),
@@ -119,6 +125,218 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
     );
   }
 
+  // ============ PAID ORDER DETAILS (READ-ONLY) ============
+  Widget _buildPaidOrderDetails(dynamic order) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with status badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Order Details',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Order ID: ${order.id.substring(0, 8).toUpperCase()}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _buildStatusBadge(order.status),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Info Cards Row
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        _buildOrderInfoCard(order),
+                        const SizedBox(height: 24),
+                        _buildItemsListCard(order),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildOrderSummaryCard(order),
+                        if (order.paymentIntentId != null) ...[
+                          const SizedBox(height: 16),
+                          _buildPaymentInfoCard(order),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Back to Orders'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRouter.adminDashboard,
+                        (route) => false,
+                      ),
+                      icon: const Icon(Icons.dashboard),
+                      label: const Text('Go to Dashboard'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color backgroundColor;
+    Color textColor;
+    IconData icon;
+
+    switch (status) {
+      case 'Paid':
+        backgroundColor = AppColors.success.withOpacity(0.1);
+        textColor = AppColors.success;
+        icon = Icons.check_circle;
+        break;
+      case 'Received':
+        backgroundColor = AppColors.info.withOpacity(0.1);
+        textColor = AppColors.info;
+        icon = Icons.inventory;
+        break;
+      default:
+        backgroundColor = AppColors.warning.withOpacity(0.1);
+        textColor = AppColors.warning;
+        icon = Icons.pending;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: textColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: textColor, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            status,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentInfoCard(dynamic order) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.success.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.success.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payment, color: AppColors.success, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Payment Info',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow('Payment ID', order.paymentIntentId?.substring(0, 20) ?? 'N/A'),
+          if (order.paidAt != null) ...[
+            const SizedBox(height: 8),
+            _buildInfoRow('Paid At', DateFormat('MMM dd, yyyy HH:mm').format(order.paidAt)),
+          ],
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, color: AppColors.success, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Payment Confirmed',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============ CHECKOUT PROCESS (FOR PENDING ORDERS) ============
   Widget _buildStepIndicator() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -666,11 +884,14 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
             color: AppColors.textSecondary,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.right,
           ),
         ),
       ],
@@ -765,7 +986,6 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       });
 
       try {
-        // ✅ FIXED: Get token properly from AuthProvider
         final authProvider = context.read<AuthProvider>();
         final token = authProvider.token;
         

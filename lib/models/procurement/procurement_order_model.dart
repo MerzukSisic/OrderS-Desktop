@@ -9,6 +9,7 @@ class ProcurementOrderModel {
   final String? notes;
   final DateTime orderDate;
   final DateTime? deliveryDate;
+  final DateTime? paidAt;
   final List<ProcurementOrderItem> items;
 
   ProcurementOrderModel({
@@ -22,6 +23,7 @@ class ProcurementOrderModel {
     this.notes,
     required this.orderDate,
     this.deliveryDate,
+    this.paidAt,
     this.items = const [],
   });
 
@@ -38,6 +40,9 @@ class ProcurementOrderModel {
       orderDate: DateTime.parse(json['orderDate']),
       deliveryDate: json['deliveryDate'] != null
           ? DateTime.parse(json['deliveryDate'])
+          : null,
+      paidAt: json['paidAt'] != null
+          ? DateTime.parse(json['paidAt'])
           : null,
       items: (json['items'] as List?)
               ?.map((e) => ProcurementOrderItem.fromJson(e))
@@ -58,6 +63,7 @@ class ProcurementOrderModel {
       'notes': notes,
       'orderDate': orderDate.toIso8601String(),
       'deliveryDate': deliveryDate?.toIso8601String(),
+      'paidAt': paidAt?.toIso8601String(),
       'items': items.map((e) => e.toJson()).toList(),
     };
   }
@@ -66,6 +72,9 @@ class ProcurementOrderModel {
   bool get isPaid => status == 'Paid';
   bool get isReceived => status == 'Received';
   bool get isCancelled => status == 'Cancelled';
+  
+  // Getter za kompatibilnost sa checkout screen-om
+  String? get paymentIntentId => stripePaymentIntentId;
 
   ProcurementOrderModel copyWith({
     String? id,
@@ -78,6 +87,7 @@ class ProcurementOrderModel {
     String? notes,
     DateTime? orderDate,
     DateTime? deliveryDate,
+    DateTime? paidAt,
     List<ProcurementOrderItem>? items,
   }) {
     return ProcurementOrderModel(
@@ -91,6 +101,7 @@ class ProcurementOrderModel {
       notes: notes ?? this.notes,
       orderDate: orderDate ?? this.orderDate,
       deliveryDate: deliveryDate ?? this.deliveryDate,
+      paidAt: paidAt ?? this.paidAt,
       items: items ?? this.items,
     );
   }
