@@ -116,7 +116,7 @@ class _Sidebar extends StatelessWidget {
                 ),
                 _SidebarItem(
                   icon: Icons.category_outlined,
-                  label: 'Categories',
+                  label: '',
                   route: AppRouter.adminCategories,
                   isActive: currentRoute == AppRouter.adminCategories,
                 ),

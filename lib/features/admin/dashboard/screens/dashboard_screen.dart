@@ -4,9 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/revenue_chart_widget.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/stat_card.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -45,22 +43,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Dashboard',
-      currentRoute: AppRouter.adminDashboard,
-      body: Consumer<StatisticsProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.dashboardStats == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (provider.error != null && provider.dashboardStats == null) {
-            return _buildError(provider.error!);
-          }
-
-          return _buildContent(provider);
-        },
-      ),
+    return Consumer<StatisticsProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.dashboardStats == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (provider.error != null && provider.dashboardStats == null) {
+          return _buildError(provider.error!);
+        }
+        return _buildContent(provider);
+      },
     );
   }
 
@@ -161,45 +153,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? stats.todayRevenue / stats.todayOrders 
         : 0.0;
 
-    return GridView.count(
-      crossAxisCount: 4,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.8,
+    return Row(
       children: [
-        StatCard(
-          title: 'Today\'s Revenue',
-          value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-              .format(stats.todayRevenue),
-          icon: Icons.attach_money,
-          color: Colors.green,
-          trend: '${stats.todayVsYesterday >= 0 ? '+' : ''}${stats.todayVsYesterday.toStringAsFixed(1)}%',
-          isPositiveTrend: stats.todayVsYesterday >= 0,
-          subtitle: 'vs yesterday',
+        Expanded(
+          child: StatCard(
+            title: 'Today\'s Revenue',
+            value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
+                .format(stats.todayRevenue),
+            icon: Icons.attach_money,
+            color: Colors.green,
+            trend: '${stats.todayVsYesterday >= 0 ? '+' : ''}${stats.todayVsYesterday.toStringAsFixed(1)}%',
+            isPositiveTrend: stats.todayVsYesterday >= 0,
+            subtitle: 'vs yesterday',
+          ),
         ),
-        StatCard(
-          title: 'Orders Today',
-          value: stats.todayOrders.toString(),
-          icon: Icons.shopping_cart,
-          color: Colors.blue,
-          subtitle: 'Week: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.weekRevenue)}',
+        const SizedBox(width: 16),
+        Expanded(
+          child: StatCard(
+            title: 'Orders Today',
+            value: stats.todayOrders.toString(),
+            icon: Icons.shopping_cart,
+            color: Colors.blue,
+            subtitle: 'Week: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.weekRevenue)}',
+          ),
         ),
-        StatCard(
-          title: 'Active Tables',
-          value: stats.activeTables.toString(),
-          icon: Icons.table_restaurant,
-          color: Colors.orange,
-          subtitle: 'currently occupied',
+        const SizedBox(width: 16),
+        Expanded(
+          child: StatCard(
+            title: 'Active Tables',
+            value: stats.activeTables.toString(),
+            icon: Icons.table_restaurant,
+            color: Colors.orange,
+            subtitle: 'currently occupied',
+          ),
         ),
-        StatCard(
-          title: 'Avg. Order Value',
-          value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-              .format(avgOrderValue),
-          icon: Icons.trending_up,
-          color: Colors.purple,
-          subtitle: 'Month: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.monthRevenue)}',
+        const SizedBox(width: 16),
+        Expanded(
+          child: StatCard(
+            title: 'Avg. Order Value',
+            value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
+                .format(avgOrderValue),
+            icon: Icons.trending_up,
+            color: Colors.purple,
+            subtitle: 'Month: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.monthRevenue)}',
+          ),
         ),
       ],
     );

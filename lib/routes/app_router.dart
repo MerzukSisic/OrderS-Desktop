@@ -1,149 +1,178 @@
 import 'package:flutter/material.dart';
 import 'package:rs2_desktop/features/admin/auth/login_screen.dart';
-import 'package:rs2_desktop/features/admin/categories/screens/categories_list_screen.dart';
 import 'package:rs2_desktop/features/admin/categories/screens/category_create_screen.dart';
 import 'package:rs2_desktop/features/admin/categories/screens/category_edit_screen.dart';
-import 'package:rs2_desktop/features/admin/dashboard/screens/dashboard_screen.dart';
-import 'package:rs2_desktop/features/admin/inventory/screens/inventory_screen.dart';
-import 'package:rs2_desktop/features/admin/procurement/screens/procurement_checkout_screen.dart';
-import 'package:rs2_desktop/features/admin/procurement/screens/procurement_screen.dart';
+import 'package:rs2_desktop/features/admin/common/admin_layout_screen.dart';
 import 'package:rs2_desktop/features/admin/products/screens/product_create_screen.dart';
 import 'package:rs2_desktop/features/admin/products/screens/product_edit_screen.dart';
-import 'package:rs2_desktop/features/admin/products/screens/products_list_screen.dart';
-import 'package:rs2_desktop/features/admin/statistics/screens/statistics_screen.dart';
 import 'package:rs2_desktop/features/admin/users/screens/user_create_screen.dart';
 import 'package:rs2_desktop/features/admin/users/screens/user_edit_screen.dart';
-import 'package:rs2_desktop/features/admin/users/screens/users_list_screen.dart';
+import 'package:rs2_desktop/features/admin/procurement/screens/procurement_checkout_screen.dart';
 
 class AppRouter {
   // Auth Routes
   static const String login = '/login';
-  
-  // Admin Routes
+
+  // Admin Main Routes (sa indexom)
   static const String adminDashboard = '/admin/dashboard';
-  
-  // Products Routes
   static const String adminProducts = '/admin/products';
-  static const String adminProductCreate = '/admin/products/create';
-  static const String adminProductEdit = '/admin/products/edit';
-  
-  // Categories Routes
   static const String adminCategories = '/admin/categories';
-  static const String adminCategoryCreate = '/admin/categories/create';
-  static const String adminCategoryEdit = '/admin/categories/edit';
-  
-  // Inventory Routes
   static const String adminInventory = '/admin/inventory';
-  
-  // Procurement Routes
   static const String adminProcurement = '/admin/procurement';
-  static const String adminProcurementCheckout = '/admin/procurement/checkout';
-  
-  // Users Routes
   static const String adminUsers = '/admin/users';
-  static const String adminUserCreate = '/admin/users/create';
-  static const String adminUserEdit = '/admin/users/edit';
-  
-  // Statistics Routes
   static const String adminStatistics = '/admin/statistics';
 
-  /// Generate routes based on settings
+  // Sub-routes (create/edit)
+  static const String adminProductCreate = '/admin/products/create';
+  static const String adminProductEdit = '/admin/products/edit';
+  static const String adminCategoryCreate = '/admin/categories/create';
+  static const String adminCategoryEdit = '/admin/categories/edit';
+  static const String adminUserCreate = '/admin/users/create';
+  static const String adminUserEdit = '/admin/users/edit';
+  static const String adminProcurementCheckout = '/admin/procurement/checkout';
+
+  /// Map route names to screen indexes
+  static int getIndexForRoute(String route) {
+    switch (route) {
+      case adminDashboard:
+        return 0;
+      case adminProducts:
+        return 1;
+      case adminCategories:
+        return 2;
+      case adminInventory:
+        return 3;
+      case adminProcurement:
+        return 4;
+      case adminUsers:
+        return 5;
+      case adminStatistics:
+        return 6;
+      default:
+        return 0;
+    }
+  }
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       // Auth
       case login:
-        return _buildRoute(const LoginScreen());
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
 
-      // Dashboard
+      // Main Admin Routes (sa sidebar)
       case adminDashboard:
-        return _buildRoute(const DashboardScreen());
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 0),
+        );
 
-      // Products
       case adminProducts:
-        return _buildRoute(const ProductsListScreen());
-      
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 1),
+        );
+
+      case adminCategories:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 2),
+        );
+
+      case adminInventory:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 3),
+        );
+
+      case adminProcurement:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 4),
+        );
+
+      case adminUsers:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 5),
+        );
+
+      case adminStatistics:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 6),
+        );
+
+      // Sub-routes (full screen modals - BEZ sidebar)
       case adminProductCreate:
-        return _buildRoute(const ProductCreateScreen());
-      
+        return MaterialPageRoute(
+          builder: (_) => const ProductCreateScreen(),
+          fullscreenDialog: true,
+        );
+
       case adminProductEdit:
         final productId = settings.arguments as String?;
         if (productId == null) {
-          return _buildRoute(const ProductsListScreen());
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 1),
+          );
         }
-        return _buildRoute(ProductEditScreen(productId: productId));
+        return MaterialPageRoute(
+          builder: (_) => ProductEditScreen(productId: productId),
+          fullscreenDialog: true,
+        );
 
-      // Categories
-      case adminCategories:
-        return _buildRoute(const CategoriesListScreen());
-      
       case adminCategoryCreate:
-        return _buildRoute(const CategoryCreateScreen());
-      
+        return MaterialPageRoute(
+          builder: (_) => const CategoryCreateScreen(),
+          fullscreenDialog: true,
+        );
+
       case adminCategoryEdit:
         final categoryId = settings.arguments as String?;
         if (categoryId == null) {
-          return _buildRoute(const CategoriesListScreen());
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 2),
+          );
         }
-        return _buildRoute(CategoryEditScreen(categoryId: categoryId));
+        return MaterialPageRoute(
+          builder: (_) => CategoryEditScreen(categoryId: categoryId),
+          fullscreenDialog: true,
+        );
 
-      // Inventory
-      case adminInventory:
-        return _buildRoute(const InventoryScreen());
-
-      // Procurement
-     case adminProcurement:
-      return _buildRoute(const ProcurementScreen());
-
-    case adminProcurementCheckout:
-      final orderId = settings.arguments as String?;
-      if (orderId == null) {
-        // Ako nema orderId, vrati na procurement screen
-        return _buildRoute(const ProcurementScreen());
-      }
-      return _buildRoute(ProcurementCheckoutScreen(orderId: orderId));
-          // Users
-      case adminUsers:
-        return _buildRoute(const UsersListScreen());
-      
       case adminUserCreate:
-        return _buildRoute(const UserCreateScreen());
-      
+        return MaterialPageRoute(
+          builder: (_) => const UserCreateScreen(),
+          fullscreenDialog: true,
+        );
+
       case adminUserEdit:
         final userId = settings.arguments as String?;
         if (userId == null) {
-          return _buildRoute(const UsersListScreen());
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 5),
+          );
         }
-        return _buildRoute(UserEditScreen(userId: userId));
+        return MaterialPageRoute(
+          builder: (_) => UserEditScreen(userId: userId),
+          fullscreenDialog: true,
+        );
 
-      // Statistics
-      case adminStatistics:
-        return _buildRoute(const StatisticsScreen());
+      case adminProcurementCheckout:
+        final orderId = settings.arguments as String?;
+        if (orderId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 4),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => ProcurementCheckoutScreen(orderId: orderId),
+          fullscreenDialog: true,
+        );
 
-      // Default / Not Found
+      // Not found
       default:
-        return _buildRoute(
-          Scaffold(
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text(
-                    'Route not found: ${settings.name}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigate back or to dashboard
-                    },
-                    child: const Text('Go to Dashboard'),
-                  ),
+                  Text('Route not found: ${settings.name}'),
                 ],
               ),
             ),
@@ -152,27 +181,15 @@ class AppRouter {
     }
   }
 
-  /// Build route with custom transition
-  static MaterialPageRoute _buildRoute(Widget screen) {
-    return MaterialPageRoute(
-      builder: (_) => screen,
-    );
-  }
-
-  /// Navigate to a named route
+  // Helper methods
   static Future<dynamic> navigateTo(
     BuildContext context,
     String routeName, {
     Object? arguments,
   }) {
-    return Navigator.pushNamed(
-      context,
-      routeName,
-      arguments: arguments,
-    );
+    return Navigator.pushNamed(context, routeName, arguments: arguments);
   }
 
-  /// Navigate and remove all previous routes
   static Future<dynamic> navigateAndRemoveUntil(
     BuildContext context,
     String routeName, {
@@ -186,7 +203,6 @@ class AppRouter {
     );
   }
 
-  /// Replace current route
   static Future<dynamic> navigateReplace(
     BuildContext context,
     String routeName, {
@@ -199,20 +215,10 @@ class AppRouter {
     );
   }
 
-  /// Pop current route
   static void pop(BuildContext context, [dynamic result]) {
     Navigator.pop(context, result);
   }
 
-  /// Pop until a specific route
-  static void popUntil(BuildContext context, String routeName) {
-    Navigator.popUntil(
-      context,
-      ModalRoute.withName(routeName),
-    );
-  }
-
-  /// Navigate to login screen (logout)
   static Future<dynamic> goToLogin(BuildContext context) {
     return navigateAndRemoveUntil(context, login);
   }

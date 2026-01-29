@@ -1,13 +1,10 @@
-// lib/features/admin/inventory/screens/inventory_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/adjust_inventory_dialog.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_logs_dialog.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_card.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 import 'package:intl/intl.dart';
 
 class InventoryScreen extends StatefulWidget {
@@ -44,22 +41,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Inventory',
-      currentRoute: AppRouter.adminInventory,
-      body: Consumer2<InventoryProvider, StoresProvider>(
-        builder: (context, inventoryProvider, storesProvider, child) {
-          if (inventoryProvider.isLoading && inventoryProvider.storeProducts.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer2<InventoryProvider, StoresProvider>(
+      builder: (context, inventoryProvider, storesProvider, child) {
+        if (inventoryProvider.isLoading && inventoryProvider.storeProducts.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (inventoryProvider.error != null && inventoryProvider.storeProducts.isEmpty) {
-            return _buildError(inventoryProvider.error!);
-          }
+        if (inventoryProvider.error != null && inventoryProvider.storeProducts.isEmpty) {
+          return _buildError(inventoryProvider.error!);
+        }
 
-          return _buildContent(inventoryProvider, storesProvider);
-        },
-      ),
+        return _buildContent(inventoryProvider, storesProvider);
+      },
     );
   }
 

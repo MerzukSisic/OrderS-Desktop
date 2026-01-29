@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/providers/products_provider.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 
 class ProductCreateScreen extends StatefulWidget {
   const ProductCreateScreen({super.key});
@@ -30,12 +28,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
   bool _isActive = true;
   bool _isSaving = false;
 
-  // Ingredients
   final List<_IngredientItem> _ingredients = [];
-
-  // Accompaniments (za buduću implementaciju)
-  // final List<String> _selectedAccompanimentGroupIds = [];
-
   final List<String> _locations = ['Kitchen', 'Bar', 'Both'];
 
   @override
@@ -81,7 +74,6 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
           'description': _descriptionController.text.trim(),
         if (_purchasePriceController.text.isNotEmpty)
           'purchasePrice': double.tryParse(_purchasePriceController.text),
-        // Ingredients
         if (_ingredients.isNotEmpty)
           'ingredients': _ingredients.map((ing) => {
             'storeProductId': ing.storeProductId,
@@ -167,320 +159,280 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Create Product',
-      currentRoute: AppRouter.adminProducts,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Create Product',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 900),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Basic Information Section
+                    _buildSectionTitle('Basic Information', Icons.info_outline),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: _buildTextField(
+                            controller: _nameController,
+                            label: 'Product Name *',
+                            hint: 'Enter product name',
+                            icon: Icons.restaurant_menu,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter product name';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildCategoryDropdown(),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    _buildTextField(
+                      controller: _descriptionController,
+                      label: 'Description',
+                      hint: 'Enter product description',
+                      icon: Icons.description_outlined,
+                      maxLines: 3,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Pricing Section
+                    _buildSectionTitle('Pricing', Icons.attach_money),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _priceController,
+                            label: 'Selling Price (KM) *',
+                            hint: '0.00',
+                            icon: Icons.sell_outlined,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d+\.?\d{0,2}')),
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter price';
+                              }
+                              if (double.tryParse(value) == null) {
+                                return 'Please enter valid price';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _purchasePriceController,
+                            label: 'Purchase Price (KM)',
+                            hint: '0.00',
+                            icon: Icons.shopping_cart_outlined,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d+\.?\d{0,2}')),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Preparation Section
+                    _buildSectionTitle('Preparation', Icons.kitchen_outlined),
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildLocationDropdown(),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _prepTimeController,
+                            label: 'Preparation Time (min)',
+                            hint: '15',
+                            icon: Icons.timer_outlined,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Ingredients Section
+                    _buildSectionTitle('Ingredients', Icons.restaurant),
+                    const SizedBox(height: 16),
+
+                    _buildIngredientsSection(),
+
+                    const SizedBox(height: 32),
+
+                    // Status Section
+                    _buildSectionTitle('Status', Icons.toggle_on_outlined),
+                    const SizedBox(height: 16),
+
                     Container(
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          const Text(
-                            'Create New Product',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
+                          Switch(
+                            value: _isActive,
+                            onChanged: (value) {
+                              setState(() {
+                                _isActive = value;
+                              });
+                            },
+                            activeColor: AppColors.success,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Add a new product to your menu',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary.withValues(alpha: 0.7),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _isActive ? 'Active' : 'Inactive',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _isActive
+                                      ? 'Product is visible and available for ordering'
+                                      : 'Product is hidden and not available',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
 
-                const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                // Form Card
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Basic Information Section
-                        _buildSectionTitle('Basic Information', Icons.info_outline),
-                        const SizedBox(height: 24),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: _buildTextField(
-                                controller: _nameController,
-                                label: 'Product Name *',
-                                hint: 'Enter product name',
-                                icon: Icons.restaurant_menu,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter product name';
-                                  }
-                                  return null;
-                                },
-                              ),
+                        OutlinedButton(
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildCategoryDropdown(),
+                            side: BorderSide(
+                              color: AppColors.textSecondary.withValues(alpha: 0.3),
                             ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        _buildTextField(
-                          controller: _descriptionController,
-                          label: 'Description',
-                          hint: 'Enter product description',
-                          icon: Icons.description_outlined,
-                          maxLines: 3,
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Pricing Section
-                        _buildSectionTitle('Pricing', Icons.attach_money),
-                        const SizedBox(height: 24),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildTextField(
-                                controller: _priceController,
-                                label: 'Selling Price (KM) *',
-                                hint: '0.00',
-                                icon: Icons.sell_outlined,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}')),
-                                ],
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter price';
-                                  }
-                                  if (double.tryParse(value) == null) {
-                                    return 'Please enter valid price';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildTextField(
-                                controller: _purchasePriceController,
-                                label: 'Purchase Price (KM)',
-                                hint: '0.00',
-                                icon: Icons.shopping_cart_outlined,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}')),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Preparation Section
-                        _buildSectionTitle('Preparation', Icons.kitchen_outlined),
-                        const SizedBox(height: 24),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildLocationDropdown(),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildTextField(
-                                controller: _prepTimeController,
-                                label: 'Preparation Time (min)',
-                                hint: '15',
-                                icon: Icons.timer_outlined,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Ingredients Section
-                        _buildSectionTitle('Ingredients', Icons.restaurant),
-                        const SizedBox(height: 16),
-
-                        _buildIngredientsSection(),
-
-                        const SizedBox(height: 32),
-
-                        // Status Section
-                        _buildSectionTitle('Status', Icons.toggle_on_outlined),
-                        const SizedBox(height: 16),
-
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              width: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Switch(
-                                value: _isActive,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _isActive = value;
-                                  });
-                                },
-                                activeColor: AppColors.success,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _isActive ? 'Active' : 'Inactive',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _isActive
-                                          ? 'Product is visible and available for ordering'
-                                          : 'Product is hidden and not available',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textSecondary.withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
-
-                        const SizedBox(height: 32),
-
-                        // Action Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            OutlinedButton(
-                              onPressed: _isSaving
-                                  ? null
-                                  : () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
-                                ),
-                                side: BorderSide(
-                                  color: AppColors.textSecondary.withValues(alpha: 0.3),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(color: AppColors.textSecondary),
-                              ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: _isSaving ? null : _handleSave,
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(_isSaving ? 'Saving...' : 'Save Product'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
                             ),
-                            const SizedBox(width: 16),
-                            ElevatedButton.icon(
-                              onPressed: _isSaving ? null : _handleSave,
-                              icon: _isSaving
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.save),
-                              label: Text(_isSaving ? 'Saving...' : 'Save Product'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
+                            elevation: 0,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -488,6 +440,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
     );
   }
 
+  // ... (sve ostale helper metode ostaju iste: _buildIngredientsSection, _buildSectionTitle, _buildTextField, _buildCategoryDropdown, _buildLocationDropdown)
+  
   Widget _buildIngredientsSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -687,12 +641,6 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.textSecondary.withValues(alpha: 0.1),
-              ),
-            ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.primary, width: 2),
@@ -700,14 +648,6 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.error),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
             ),
           ),
         ),
@@ -900,7 +840,6 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Store Product Dropdown
                 const Text(
                   'Store Product',
                   style: TextStyle(
@@ -949,7 +888,6 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
 
                 const SizedBox(height: 20),
 
-                // Quantity & Unit
                 Row(
                   children: [
                     Expanded(

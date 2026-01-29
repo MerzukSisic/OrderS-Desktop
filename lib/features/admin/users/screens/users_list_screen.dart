@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
@@ -22,7 +21,6 @@ class _UsersListScreenState extends State<UsersListScreen> {
   @override
   void initState() {
     super.initState();
-    // Schedule the load after the current frame completes
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadData();
@@ -48,7 +46,6 @@ class _UsersListScreenState extends State<UsersListScreen> {
   List<UserModel> _filterUsers(List<UserModel> users) {
     var filtered = users;
 
-    // Search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((user) {
         return user.fullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -110,50 +107,46 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Users',
-      currentRoute: AppRouter.adminUsers,
-      body: Consumer<UsersProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer<UsersProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (provider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                  const SizedBox(height: 16),
-                  Text(provider.error!, style: TextStyle(color: AppColors.error)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final filteredUsers = _filterUsers(provider.users);
-
-          return Column(
-            children: [
-              _buildHeader(provider.users.length),
-              const SizedBox(height: 16),
-              _buildFilters(),
-              const SizedBox(height: 16),
-              Expanded(
-                child: filteredUsers.isEmpty
-                    ? _buildEmptyState()
-                    : _buildUsersList(filteredUsers),
-              ),
-            ],
+        if (provider.error != null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                const SizedBox(height: 16),
+                Text(provider.error!, style: TextStyle(color: AppColors.error)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _loadData,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        final filteredUsers = _filterUsers(provider.users);
+
+        return Column(
+          children: [
+            _buildHeader(provider.users.length),
+            const SizedBox(height: 16),
+            _buildFilters(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: filteredUsers.isEmpty
+                  ? _buildEmptyState()
+                  : _buildUsersList(filteredUsers),
+            ),
+          ],
+        );
+      },
     );
   }
 

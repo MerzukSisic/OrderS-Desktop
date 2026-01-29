@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/models/products/category_model.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
@@ -140,261 +139,211 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Categories Management',
-      currentRoute: AppRouter.adminCategories,
-      body: Column(
-        children: [
-          // Header Section - DARK
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  width: 1,
-                ),
+    return Column(
+      children: [
+        // Header Section
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                width: 1,
               ),
             ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    // Title & Stats
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Categories',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Consumer<CategoriesProvider>(
-                            builder: (context, provider, _) {
-                              return Text(
-                                '${provider.categories.length} categories',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.7,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Add Button
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRouter.adminCategoryCreate,
-                        );
-                      },
-                      icon: const Icon(Icons.add, size: 20),
-                      label: const Text('Add Category'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Search and Filters
-                Row(
-                  children: [
-                    // Search
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (_) => setState(() {}),
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          hintText: 'Search categories...',
-                          hintStyle: TextStyle(
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: AppColors.primary,
-                          ),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(
-                                    Icons.clear,
-                                    size: 20,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() {});
-                                  },
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: AppColors.surfaceVariant,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Refresh Button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.refresh,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {
-                          context.read<CategoriesProvider>().fetchCategories();
-                        },
-                        tooltip: 'Refresh',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
-
-          // Categories Grid
-          Expanded(
-            child: Consumer<CategoriesProvider>(
-              builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                }
-
-                if (provider.error != null) {
-                  return Center(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  // Title & Stats
+                  Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppColors.error.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          provider.error!,
-                          style: const TextStyle(
-                            color: AppColors.error,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => provider.fetchCategories(),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final filteredCategories = _getFilteredCategories(
-                  provider.categories,
-                );
-
-                if (filteredCategories.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.category_outlined,
-                          size: 64,
-                          color: AppColors.textSecondary.withValues(alpha: 0.3),
-                        ),
-                        const SizedBox(height: 16),
                         const Text(
-                          'No categories found',
+                          'Categories',
                           style: TextStyle(
-                            fontSize: 18,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'Try adjusting your search',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.7,
-                            ),
-                          ),
+                        Consumer<CategoriesProvider>(
+                          builder: (context, provider, _) {
+                            return Text(
+                              '${provider.categories.length} categories',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary.withValues(alpha: 0.7),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                  );
-                }
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(24),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 300,
-                    childAspectRatio: 1.2,
-                    crossAxisSpacing: 24,
-                    mainAxisSpacing: 24,
                   ),
-                  itemCount: filteredCategories.length,
-                  itemBuilder: (context, index) {
-                    final category = filteredCategories[index];
-                    return _buildCategoryCard(category);
-                  },
-                );
-              },
-            ),
+                  // Add Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRouter.adminCategoryCreate);
+                    },
+                    icon: const Icon(Icons.add, size: 20),
+                    label: const Text('Add Category'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Search
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (_) => setState(() {}),
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'Search categories...',
+                        hintStyle: TextStyle(
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                        ),
+                        prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 20, color: AppColors.textSecondary),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {});
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: AppColors.surfaceVariant,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+                      onPressed: () {
+                        context.read<CategoriesProvider>().fetchCategories();
+                      },
+                      tooltip: 'Refresh',
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        
+        // Categories Grid
+        Expanded(
+          child: Consumer<CategoriesProvider>(
+            builder: (context, provider, _) {
+              if (provider.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
+
+              if (provider.error != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.error.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        provider.error!,
+                        style: const TextStyle(color: AppColors.error, fontSize: 16),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => provider.fetchCategories(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final filteredCategories = _getFilteredCategories(provider.categories);
+
+              if (filteredCategories.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.category_outlined,
+                        size: 64,
+                        color: AppColors.textSecondary.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No categories found',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(24),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 300,
+                  childAspectRatio: 1.2,
+                  crossAxisSpacing: 24,
+                  mainAxisSpacing: 24,
+                ),
+                itemCount: filteredCategories.length,
+                itemBuilder: (context, index) {
+                  final category = filteredCategories[index];
+                  return _buildCategoryCard(category);
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -418,7 +367,6 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Category Icon/Image
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -430,9 +378,7 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                     AppColors.primary.withValues(alpha: 0.05),
                   ],
                 ),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Center(
                 child: Icon(
@@ -443,8 +389,6 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
               ),
             ),
           ),
-
-          // Category Info
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -493,8 +437,6 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
               ],
             ),
           ),
-
-          // Actions
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Row(
@@ -512,12 +454,8 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                     label: const Text('Edit'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      side: BorderSide(
-                        color: AppColors.primary.withValues(alpha: 0.5),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                   ),
@@ -545,23 +483,15 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
   IconData _getCategoryIcon(String name) {
     final lowercaseName = name.toLowerCase();
-    if (lowercaseName.contains('food') ||
-        lowercaseName.contains('jelo') ||
-        lowercaseName.contains('hrana')) {
+    if (lowercaseName.contains('food') || lowercaseName.contains('jelo') || lowercaseName.contains('hrana')) {
       return Icons.restaurant;
-    } else if (lowercaseName.contains('drink') ||
-        lowercaseName.contains('piće') ||
-        lowercaseName.contains('pice')) {
+    } else if (lowercaseName.contains('drink') || lowercaseName.contains('piće') || lowercaseName.contains('pice')) {
       return Icons.local_bar;
-    } else if (lowercaseName.contains('coffee') ||
-        lowercaseName.contains('kafa')) {
+    } else if (lowercaseName.contains('coffee') || lowercaseName.contains('kafa')) {
       return Icons.coffee;
-    } else if (lowercaseName.contains('dessert') ||
-        lowercaseName.contains('desert')) {
+    } else if (lowercaseName.contains('dessert') || lowercaseName.contains('desert')) {
       return Icons.cake;
-    } else if (lowercaseName.contains('breakfast') ||
-        lowercaseName.contains('doručak') ||
-        lowercaseName.contains('dorucak')) {
+    } else if (lowercaseName.contains('breakfast') || lowercaseName.contains('doručak')) {
       return Icons.free_breakfast;
     }
     return Icons.category;

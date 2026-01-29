@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/auth_provider.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
@@ -42,26 +41,136 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Procurement Details',
-      currentRoute: AppRouter.adminProcurement,
-      body: Consumer<ProcurementProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.selectedOrder == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer<ProcurementProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.selectedOrder == null) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'Procurement Details',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          if (provider.error != null && provider.selectedOrder == null) {
-            return _buildError(provider.error!);
-          }
+        if (provider.error != null && provider.selectedOrder == null) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'Procurement Details',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: _buildError(provider.error!),
+          );
+        }
 
-          if (provider.selectedOrder == null) {
-            return _buildNotFound();
-          }
+        if (provider.selectedOrder == null) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'Procurement Details',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: _buildNotFound(),
+          );
+        }
 
-          return _buildContent(provider.selectedOrder!);
-        },
-      ),
+        final order = provider.selectedOrder!;
+
+        // Ako je order plaćen, fullscreen modal sa AppBar
+        if (order.status == 'Paid' || order.status == 'Received') {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                'Order #${order.id.substring(0, 8).toUpperCase()}',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: _buildPaidOrderDetails(order),
+          );
+        }
+
+        // Za pending orders - checkout process SA AppBar
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: AppColors.surface,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: AppColors.textPrimary),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              'Checkout',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: Column(
+            children: [
+              _buildStepIndicator(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: _buildCurrentStep(order),
+                ),
+              ),
+              _buildBottomActions(order),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -101,27 +210,6 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildContent(dynamic order) {
-    // ✅ CHECK: Ako je order već plaćen ili primljen, prikaži samo detalje
-    if (order.status == 'Paid' || order.status == 'Received') {
-      return _buildPaidOrderDetails(order);
-    }
-
-    // Za Pending status - prikaži checkout proces
-    return Column(
-      children: [
-        _buildStepIndicator(),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: _buildCurrentStep(order),
-          ),
-        ),
-        _buildBottomActions(order),
-      ],
     );
   }
 
@@ -975,12 +1063,10 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   // ============ STRIPE CHECKOUT PAYMENT HANDLING ============
   Future<void> _handleNext(dynamic order) async {
     if (_currentStep == 0) {
-      // Move to payment step
       setState(() {
         _currentStep = 1;
       });
     } else if (_currentStep == 1) {
-      // Process Stripe Checkout payment
       setState(() {
         _isProcessing = true;
       });
@@ -995,7 +1081,6 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         
         debugPrint('🔑 Using token: ${token.substring(0, 20)}...');
         
-        // Create Stripe Checkout Session
         final response = await _dio.post(
           'http://127.0.0.1:5220/api/procurement/${order.id}/create-checkout-session',
           options: Options(
@@ -1009,12 +1094,10 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         final checkoutUrl = response.data['checkoutUrl'] as String;
         debugPrint('🔗 Stripe Checkout URL: $checkoutUrl');
 
-        // Open Stripe Checkout in browser
         final uri = Uri.parse(checkoutUrl);
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
           
-          // Show polling dialog
           if (!mounted) return;
           _showPollingDialog(order.id);
         } else {
@@ -1090,12 +1173,11 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       ),
     );
 
-    // Start polling for payment status
     _pollPaymentStatus(orderId);
   }
 
   Future<void> _pollPaymentStatus(String orderId) async {
-    const maxAttempts = 60; // 3 minutes (60 * 3s)
+    const maxAttempts = 60;
     
     for (int i = 0; i < maxAttempts; i++) {
       await Future.delayed(const Duration(seconds: 3));
@@ -1108,14 +1190,13 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
           debugPrint('✅ Payment confirmed! Order status: ${order?.status}');
           
           if (!mounted) return;
-          Navigator.of(context).pop(); // Close polling dialog
+          Navigator.of(context).pop();
           
           setState(() {
-            _currentStep = 2; // Move to success screen
+            _currentStep = 2;
             _isProcessing = false;
           });
           
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('✅ Payment successful!'),
@@ -1130,9 +1211,8 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       }
     }
     
-    // Timeout - payment verification took too long
     if (!mounted) return;
-    Navigator.of(context).pop(); // Close dialog
+    Navigator.of(context).pop();
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

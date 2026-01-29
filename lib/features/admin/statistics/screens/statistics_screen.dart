@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/models/statistics/dashboard_stats.dart';
 import 'package:rs2_desktop/models/statistics/product_sales.dart';
 import 'package:rs2_desktop/models/statistics/peak_hour.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -35,7 +33,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   Future<void> _loadData() async {
     final statsProvider = context.read<StatisticsProvider>();
-    
     await Future.wait([
       statsProvider.fetchDashboardStats(),
       statsProvider.fetchTopProducts(days: int.parse(_selectedPeriod)),
@@ -56,46 +53,42 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Statistics & Analytics',
-      currentRoute: AppRouter.adminStatistics,
-      body: Consumer<StatisticsProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && provider.dashboardStats == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer<StatisticsProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading && provider.dashboardStats == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (provider.error != null && provider.dashboardStats == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                  const SizedBox(height: 16),
-                  Text(provider.error!, style: TextStyle(color: AppColors.error)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 16),
-              _buildTabs(),
-              const SizedBox(height: 16),
-              Expanded(
-                child: _buildTabContent(provider),
-              ),
-            ],
+        if (provider.error != null && provider.dashboardStats == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                const SizedBox(height: 16),
+                Text(provider.error!, style: TextStyle(color: AppColors.error)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _loadData,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        return Column(
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 16),
+            _buildTabs(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _buildTabContent(provider),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -287,7 +280,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-
           // Operational Stats
           Row(
             children: [
@@ -320,7 +312,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-
           // Top Products & Waiters
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,7 +332,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   Widget _buildProductsTab(StatisticsProvider provider) {
     final products = provider.topProducts;
-
     if (products.isEmpty) {
       return Center(
         child: Column(
@@ -396,7 +386,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   Widget _buildPeakHoursTab(StatisticsProvider provider) {
     final peakHours = provider.peakHours;
-
     if (peakHours.isEmpty) {
       return Center(
         child: Column(

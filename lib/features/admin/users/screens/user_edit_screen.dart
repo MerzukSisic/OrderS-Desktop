@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 
 class UserEditScreen extends StatefulWidget {
   final String userId;
@@ -31,7 +29,6 @@ class _UserEditScreenState extends State<UserEditScreen> {
   @override
   void initState() {
     super.initState();
-    // Schedule the load after the current frame completes
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadUser();
@@ -117,7 +114,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(context);
               
               final success = await context.read<UsersProvider>().deleteUser(widget.userId);
               
@@ -129,7 +126,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
                       backgroundColor: AppColors.success,
                     ),
                   );
-                  Navigator.pop(context); // Go back to list
+                  Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -149,95 +146,110 @@ class _UserEditScreenState extends State<UserEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Edit User',
-      currentRoute: AppRouter.adminUsers,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _user == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                      const SizedBox(height: 16),
-                      const Text('User not found'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Go Back'),
-                      ),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(),
-                            const SizedBox(height: 32),
-                            _buildFormSection(),
-                            const SizedBox(height: 32),
-                            _buildActions(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.surface,
-              ),
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Edit User',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(width: 16),
-            Expanded(
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Edit User',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 48, color: AppColors.error),
+              const SizedBox(height: 16),
+              const Text('User not found'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Edit: ${_user!.fullName}',
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _showDeleteDialog,
+            icon: Icon(Icons.delete, color: AppColors.error),
+            tooltip: 'Delete User',
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Form(
+              key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Edit User',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Last updated: ${_formatDate(_user!.updatedAt ?? _user!.createdAt)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                  _buildFormSection(),
+                  const SizedBox(height: 32),
+                  _buildActions(),
                 ],
               ),
             ),
-            IconButton(
-              onPressed: _showDeleteDialog,
-              icon: Icon(Icons.delete, color: AppColors.error),
-              tooltip: 'Delete User',
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.error.withOpacity(0.1),
-              ),
-            ),
-          ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
@@ -382,12 +394,25 @@ class _UserEditScreenState extends State<UserEditScreen> {
                 Icon(Icons.info_outline, size: 20, color: AppColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'User ID: ${_user!.id}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'User ID: ${_user!.id}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Last updated: ${_formatDate(_user!.updatedAt ?? _user!.createdAt)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

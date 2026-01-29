@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/models/products/category_model.dart';
 
@@ -164,9 +162,24 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AdminScaffold(
-        title: 'Edit Category',
-        currentRoute: AppRouter.adminCategories,
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Edit Category',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -174,9 +187,24 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
     }
 
     if (_category == null) {
-      return AdminScaffold(
-        title: 'Edit Category',
-        currentRoute: AppRouter.adminCategories,
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Edit Category',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -207,230 +235,167 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
       );
     }
 
-    return AdminScaffold(
-      title: 'Edit Category',
-      currentRoute: AppRouter.adminCategories,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Edit: ${_category!.name}',
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Icon Selector
+                    const Text(
+                      'Category Icon',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     Container(
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Edit Category',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _category!.name,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Form Card - DARK
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Icon Selector
-                        const Text(
-                          'Category Icon',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
+                      child: Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: _iconOptions.map((option) {
+                          final isSelected = _selectedIcon == option['icon'];
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                _selectedIcon = option['icon'];
+                              });
+                            },
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: _iconOptions.map((option) {
-                              final isSelected = _selectedIcon == option['icon'];
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedIcon = option['icon'];
-                                  });
-                                },
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.15)
+                                    : AppColors.surface,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary.withValues(alpha: 0.2),
+                                  width: isSelected ? 2 : 1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? AppColors.primary.withValues(alpha: 0.15)
-                                        : AppColors.surface,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : AppColors.textSecondary.withValues(alpha: 0.2),
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    option['icon'],
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.textSecondary,
-                                    size: 32,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                              ),
+                              child: Icon(
+                                option['icon'],
+                                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                size: 32,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Category Name
+                    _buildTextField(
+                      controller: _nameController,
+                      label: 'Category Name *',
+                      hint: 'Enter category name',
+                      icon: Icons.label_outline,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter category name';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Description
+                    _buildTextField(
+                      controller: _descriptionController,
+                      label: 'Description',
+                      hint: 'Enter category description (optional)',
+                      icon: Icons.description_outlined,
+                      maxLines: 4,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: _isSaving ? null : () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
+                          child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
                         ),
-
-                        const SizedBox(height: 32),
-
-                        // Category Name
-                        _buildTextField(
-                          controller: _nameController,
-                          label: 'Category Name *',
-                          hint: 'Enter category name',
-                          icon: Icons.label_outline,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter category name';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Description
-                        _buildTextField(
-                          controller: _descriptionController,
-                          label: 'Description',
-                          hint: 'Enter category description (optional)',
-                          icon: Icons.description_outlined,
-                          maxLines: 4,
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Action Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            OutlinedButton(
-                              onPressed: _isSaving
-                                  ? null
-                                  : () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
-                                ),
-                                side: BorderSide(
-                                  color: AppColors.textSecondary.withValues(alpha: 0.3),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(color: AppColors.textSecondary),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            ElevatedButton.icon(
-                              onPressed: _isSaving ? null : _handleUpdate,
-                              icon: _isSaving
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.save),
-                              label: Text(_isSaving ? 'Updating...' : 'Update Category'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: _isSaving ? null : _handleUpdate,
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(_isSaving ? 'Updating...' : 'Update Category'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -474,12 +439,6 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.textSecondary.withValues(alpha: 0.1),
-              ),
-            ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.primary, width: 2),
@@ -491,10 +450,6 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
             ),
           ),
         ),

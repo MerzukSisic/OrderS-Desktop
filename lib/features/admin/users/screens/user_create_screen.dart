@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
-import 'package:rs2_desktop/routes/app_router.dart';
 
 class UserCreateScreen extends StatefulWidget {
   const UserCreateScreen({super.key});
@@ -19,7 +17,7 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   String _selectedRole = 'Waiter';
   bool _isSubmitting = false;
   bool _obscurePassword = true;
@@ -41,12 +39,12 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
     setState(() => _isSubmitting = true);
 
     final success = await context.read<UsersProvider>().createUser(
-      fullName: _fullNameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      role: _selectedRole,
-      phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-    );
+          fullName: _fullNameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          role: _selectedRole,
+          phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        );
 
     if (mounted) {
       setState(() => _isSubmitting = false);
@@ -73,9 +71,24 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Create User',
-      currentRoute: AppRouter.adminUsers,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Create User',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Center(
@@ -86,8 +99,6 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(),
-                  const SizedBox(height: 32),
                   _buildFormSection(),
                   const SizedBox(height: 32),
                   _buildActions(),
@@ -97,41 +108,6 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.surface,
-              ),
-            ),
-            const SizedBox(width: 16),
-            const Text(
-              'Create New User',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.only(left: 56),
-          child: Text(
-            'Add a new user to the system',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -151,7 +127,7 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 24),
-          
+
           // Full Name
           TextFormField(
             controller: _fullNameController,
@@ -236,7 +212,6 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
             },
           ),
           const SizedBox(height: 24),
-
           const Divider(),
           const SizedBox(height: 24),
 

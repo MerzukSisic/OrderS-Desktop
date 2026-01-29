@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/create_procurement_dialog.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/procurement_card.dart';
-import 'package:rs2_desktop/features/admin/shared/admin_scaffold.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
@@ -41,22 +40,18 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      title: 'Procurement',
-      currentRoute: AppRouter.adminProcurement,
-      body: Consumer2<ProcurementProvider, StoresProvider>(
-        builder: (context, procurementProvider, storesProvider, child) {
-          if (procurementProvider.isLoading && procurementProvider.procurementOrders.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer2<ProcurementProvider, StoresProvider>(
+      builder: (context, procurementProvider, storesProvider, child) {
+        if (procurementProvider.isLoading && procurementProvider.procurementOrders.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (procurementProvider.error != null && procurementProvider.procurementOrders.isEmpty) {
-            return _buildError(procurementProvider.error!);
-          }
+        if (procurementProvider.error != null && procurementProvider.procurementOrders.isEmpty) {
+          return _buildError(procurementProvider.error!);
+        }
 
-          return _buildContent(procurementProvider, storesProvider);
-        },
-      ),
+        return _buildContent(procurementProvider, storesProvider);
+      },
     );
   }
 
