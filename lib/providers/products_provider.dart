@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/services/api/products_api_service.dart';
 import 'package:rs2_desktop/models/products/product_model.dart';
 
-
 class ProductsProvider with ChangeNotifier {
   final ProductsApiService _apiService = ProductsApiService();
 
@@ -97,6 +96,7 @@ class ProductsProvider with ChangeNotifier {
   }
 
   /// Update product (Admin only)
+  /// ✅ FIXED: Properly updates local state with accompaniments
   Future<ProductModel?> updateProduct(
     String productId,
     Map<String, dynamic> productData,
@@ -107,20 +107,25 @@ class ProductsProvider with ChangeNotifier {
       final response = await _apiService.updateProduct(productId, productData);
 
       if (response.success && response.data != null) {
-        // Update local state
+        // ✅ Update local state with FULL product (including accompaniments)
         final index = _products.indexWhere((p) => p.id == productId);
         if (index != -1) {
           _products[index] = response.data!;
           _applyFilters();
+        } else {
+          // ✅ If product not in list, add it
+          _products.add(response.data!);
+          _applyFilters();
         }
 
-        // Update selected product if it's the same
+        // ✅ Update selected product if it's the same
         if (_selectedProduct?.id == productId) {
           _selectedProduct = response.data;
         }
 
         notifyListeners();
         debugPrint('✅ Product updated: ${response.data!.name}');
+        debugPrint('✅ Accompaniment groups: ${response.data!.accompanimentGroups.length}');
         return response.data;
       } else {
         _setError(response.error ?? 'Failed to update product');
@@ -128,6 +133,7 @@ class ProductsProvider with ChangeNotifier {
       }
     } catch (e) {
       _setError('Error updating product: $e');
+      debugPrint('❌ Update error: $e');
       return null;
     }
   }

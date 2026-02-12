@@ -62,12 +62,12 @@ class StatisticsApiService {
   }
 
   /// Get top selling products
-  Future<ApiResponse<List<ProductSales>>> getTopSellingProducts({
+   Future<ApiResponse<List<ProductSales>>> getTopSellingProducts({
     int count = 10,
     int days = 30,
   }) async {
     return await _client.get(
-      '/statistics/top-selling',
+      '/statistics/top-selling-products', // ✅ CHANGED from '/statistics/top-selling'
       queryParameters: {
         'count': count,
         'days': days,

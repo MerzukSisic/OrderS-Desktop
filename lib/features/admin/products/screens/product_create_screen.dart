@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
+import 'package:rs2_desktop/core/widgets/accompaniment_group_manager.dart';
+import 'package:rs2_desktop/models/products/accompaniment_group.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/providers/products_provider.dart';
@@ -30,6 +32,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
 
   final List<_IngredientItem> _ingredients = [];
   final List<String> _locations = ['Kitchen', 'Bar', 'Both'];
+  final List<AccompanimentGroup> _accompanimentGroups = []; // ✅ ADD THIS LINE
 
   @override
   void initState() {
@@ -75,14 +78,43 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
         if (_purchasePriceController.text.isNotEmpty)
           'purchasePrice': double.tryParse(_purchasePriceController.text),
         if (_ingredients.isNotEmpty)
-          'ingredients': _ingredients.map((ing) => {
-            'storeProductId': ing.storeProductId,
-            'quantity': ing.quantity,
-            'unit': ing.unit,
-          }).toList(),
+          'ingredients': _ingredients
+              .map(
+                (ing) => {
+                  'storeProductId': ing.storeProductId,
+                  'quantity': ing.quantity,
+                  'unit': ing.unit,
+                },
+              )
+              .toList(),
+        if (_accompanimentGroups.isNotEmpty)
+          'accompanimentGroups': _accompanimentGroups
+              .map(
+                (group) => {
+                  'name': group.name,
+                  'selectionType': group.selectionType,
+                  'isRequired': group.isRequired,
+                  'minSelections': group.minSelections,
+                  'maxSelections': group.maxSelections,
+                  'displayOrder': group.displayOrder,
+                  'accompaniments': group.accompaniments
+                      .map(
+                        (acc) => {
+                          'name': acc.name,
+                          'extraCharge': acc.extraCharge,
+                          'isAvailable': acc.isAvailable,
+                          'displayOrder': acc.displayOrder,
+                        },
+                      )
+                      .toList(),
+                },
+              )
+              .toList(),
       };
 
-      final result = await context.read<ProductsProvider>().createProduct(productData);
+      final result = await context.read<ProductsProvider>().createProduct(
+        productData,
+      );
 
       if (!mounted) return;
 
@@ -219,9 +251,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildCategoryDropdown(),
-                        ),
+                        Expanded(child: _buildCategoryDropdown()),
                       ],
                     ),
 
@@ -252,7 +282,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,2}')),
+                                RegExp(r'^\d+\.?\d{0,2}'),
+                              ),
                             ],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -275,7 +306,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,2}')),
+                                RegExp(r'^\d+\.?\d{0,2}'),
+                              ),
                             ],
                           ),
                         ),
@@ -290,9 +322,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
 
                     Row(
                       children: [
-                        Expanded(
-                          child: _buildLocationDropdown(),
-                        ),
+                        Expanded(child: _buildLocationDropdown()),
                         const SizedBox(width: 16),
                         Expanded(
                           child: _buildTextField(
@@ -316,6 +346,26 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                     const SizedBox(height: 16),
 
                     _buildIngredientsSection(),
+
+                    const SizedBox(height: 32),
+
+                    _buildSectionTitle(
+                      'Accompaniments',
+                      Icons.add_circle_outline,
+                    ),
+                    const SizedBox(height: 16),
+
+                    AccompanimentGroupManager(
+                      initialGroups: _accompanimentGroups,
+                      onGroupsChanged: (groups) {
+                        setState(() {
+                          _accompanimentGroups.clear();
+                          _accompanimentGroups.addAll(groups);
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 32),
 
                     const SizedBox(height: 32),
 
@@ -364,7 +414,9 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                                       : 'Product is hidden and not available',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.7,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -390,7 +442,9 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                               vertical: 16,
                             ),
                             side: BorderSide(
-                              color: AppColors.textSecondary.withValues(alpha: 0.3),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -441,7 +495,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
   }
 
   // ... (sve ostale helper metode ostaju iste: _buildIngredientsSection, _buildSectionTitle, _buildTextField, _buildCategoryDropdown, _buildLocationDropdown)
-  
+
   Widget _buildIngredientsSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -471,13 +525,11 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                 onPressed: _addIngredient,
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Ingredient'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                ),
+                style: TextButton.styleFrom(foregroundColor: AppColors.primary),
               ),
             ],
           ),
-          
+
           if (_ingredients.isEmpty) ...[
             const SizedBox(height: 12),
             Center(
@@ -507,7 +559,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
             ..._ingredients.asMap().entries.map((entry) {
               final index = entry.key;
               final ingredient = entry.value;
-              
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
@@ -550,7 +602,9 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                             '${ingredient.quantity} ${ingredient.unit}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary.withValues(alpha: 0.7),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                           ),
                         ],
@@ -594,9 +648,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Divider(
-            color: AppColors.primary.withValues(alpha: 0.2),
-          ),
+          child: Divider(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
       ],
     );
@@ -633,7 +685,9 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             prefixIcon: Icon(icon, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceVariant,
@@ -684,12 +738,20 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                   value: _selectedCategoryId,
                   hint: Text(
                     'Select category',
-                    style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    ),
                   ),
                   isExpanded: true,
-                  icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: AppColors.textSecondary,
+                  ),
                   dropdownColor: AppColors.surfaceVariant,
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                  ),
                   items: provider.categories.map((category) {
                     return DropdownMenuItem(
                       value: category.id,
@@ -736,9 +798,15 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
             child: DropdownButton<String>(
               value: _selectedLocation,
               isExpanded: true,
-              icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+              icon: const Icon(
+                Icons.arrow_drop_down,
+                color: AppColors.textSecondary,
+              ),
               dropdownColor: AppColors.surfaceVariant,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 15,
+              ),
               items: _locations.map((location) {
                 return DropdownMenuItem(
                   value: location,
@@ -748,8 +816,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                         location == 'Kitchen'
                             ? Icons.kitchen_outlined
                             : location == 'Bar'
-                                ? Icons.local_bar_outlined
-                                : Icons.home_work_outlined,
+                            ? Icons.local_bar_outlined
+                            : Icons.home_work_outlined,
                         size: 20,
                         color: AppColors.primary,
                       ),
@@ -819,7 +887,9 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
       builder: (context, provider, _) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Container(
@@ -828,10 +898,17 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                   color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.add, color: AppColors.primary, size: 24),
+                child: const Icon(
+                  Icons.add,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
-              const Text('Add Ingredient', style: TextStyle(color: AppColors.textPrimary)),
+              const Text(
+                'Add Ingredient',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
             ],
           ),
           content: SizedBox(
@@ -850,7 +927,10 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
@@ -863,12 +943,20 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                       value: _selectedStoreProductId,
                       hint: Text(
                         'Select store product',
-                        style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                        style: TextStyle(
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                        ),
                       ),
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.textSecondary,
+                      ),
                       dropdownColor: AppColors.surfaceVariant,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                      ),
                       items: provider.storeProducts.map((product) {
                         return DropdownMenuItem(
                           value: product.id,
@@ -876,7 +964,9 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                         );
                       }).toList(),
                       onChanged: (value) {
-                        final selected = provider.storeProducts.firstWhere((p) => p.id == value);
+                        final selected = provider.storeProducts.firstWhere(
+                          (p) => p.id == value,
+                        );
                         setState(() {
                           _selectedStoreProductId = value;
                           _selectedStoreProductName = selected.name;
@@ -907,10 +997,16 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                           TextFormField(
                             controller: _quantityController,
                             keyboardType: TextInputType.number,
-                            style: const TextStyle(color: AppColors.textPrimary),
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                            ),
                             decoration: InputDecoration(
                               hintText: '0.0',
-                              hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                              hintStyle: TextStyle(
+                                color: AppColors.textSecondary.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
                               filled: true,
                               fillColor: AppColors.surfaceVariant,
                               border: OutlineInputBorder(
@@ -919,11 +1015,16 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
                               ),
                             ),
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,2}'),
+                              ),
                             ],
                           ),
                         ],
@@ -944,21 +1045,33 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
                           ),
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.surfaceVariant,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.textSecondary.withValues(alpha: 0.1),
+                                color: AppColors.textSecondary.withValues(
+                                  alpha: 0.1,
+                                ),
                               ),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: _selectedUnit,
                                 isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary, size: 20),
+                                icon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: AppColors.textSecondary,
+                                  size: 20,
+                                ),
                                 dropdownColor: AppColors.surfaceVariant,
-                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 15,
+                                ),
                                 items: _units.map((unit) {
                                   return DropdownMenuItem(
                                     value: unit,
@@ -990,19 +1103,22 @@ class _AddIngredientDialogState extends State<_AddIngredientDialog> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_selectedStoreProductId == null || _quantityController.text.isEmpty) {
+                if (_selectedStoreProductId == null ||
+                    _quantityController.text.isEmpty) {
                   return;
                 }
 
                 final quantity = double.tryParse(_quantityController.text);
                 if (quantity == null) return;
 
-                widget.onAdd(_IngredientItem(
-                  storeProductId: _selectedStoreProductId!,
-                  storeProductName: _selectedStoreProductName!,
-                  quantity: quantity,
-                  unit: _selectedUnit,
-                ));
+                widget.onAdd(
+                  _IngredientItem(
+                    storeProductId: _selectedStoreProductId!,
+                    storeProductName: _selectedStoreProductName!,
+                    quantity: quantity,
+                    unit: _selectedUnit,
+                  ),
+                );
 
                 Navigator.pop(context);
               },

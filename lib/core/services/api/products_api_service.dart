@@ -1,5 +1,3 @@
-
-
 import 'package:rs2_desktop/core/api/api_client.dart';
 import 'package:rs2_desktop/models/products/product_model.dart';
 
@@ -69,14 +67,27 @@ class ProductsApiService {
   }
 
   /// Update product (Admin only)
+  /// ✅ FIXED: Handle 204 No Content response from backend
   Future<ApiResponse<ProductModel>> updateProduct(
     String id,
     Map<String, dynamic> data,
   ) async {
-    return await _client.put(
+    // ✅ Step 1: Send PUT request (backend returns 204 No Content)
+    final updateResponse = await _client.put(
       '/products/$id',
       data: data,
-      fromJson: (json) => ProductModel.fromJson(json),
+      fromJson: (json) => null, // ✅ Don't parse empty response
+    );
+
+    // ✅ Step 2: If successful, fetch the updated product with accompaniments
+    if (updateResponse.success) {
+      return await getProductById(id);
+    }
+
+    // ✅ Step 3: If failed, return error
+    return ApiResponse<ProductModel>(
+      success: false,
+      error: updateResponse.error ?? 'Failed to update product',
     );
   }
 

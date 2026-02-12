@@ -63,7 +63,6 @@ class AccompanimentGroup {
   bool get isSingleSelection => selectionType == 'Single';
   bool get isMultipleSelection => selectionType == 'Multiple';
 
-  // ← DODANA copyWith METODA
   AccompanimentGroup copyWith({
     String? id,
     String? name,

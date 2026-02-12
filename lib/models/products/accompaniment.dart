@@ -1,30 +1,30 @@
 class Accompaniment {
   final String id;
+  final String accompanimentGroupId;
   final String name;
   final double extraCharge;
-  final String accompanimentGroupId;
-  final int displayOrder;
   final bool isAvailable;
+  final int displayOrder;
   final DateTime? createdAt;
 
   Accompaniment({
     required this.id,
+    required this.accompanimentGroupId,
     required this.name,
     required this.extraCharge,
-    required this.accompanimentGroupId,
-    required this.displayOrder,
     required this.isAvailable,
+    required this.displayOrder,
     this.createdAt,
   });
 
   factory Accompaniment.fromJson(Map<String, dynamic> json) {
     return Accompaniment(
       id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      extraCharge: (json['extraCharge'] ?? 0).toDouble(),
       accompanimentGroupId: json['accompanimentGroupId'] ?? '',
-      displayOrder: json['displayOrder'] ?? 0,
+      name: json['name'] ?? '',
+      extraCharge: (json['extraCharge'] as num?)?.toDouble() ?? 0.0,
       isAvailable: json['isAvailable'] ?? true,
+      displayOrder: json['displayOrder'] ?? 0,
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : null,
@@ -34,37 +34,31 @@ class Accompaniment {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'accompanimentGroupId': accompanimentGroupId,
       'name': name,
       'extraCharge': extraCharge,
-      'accompanimentGroupId': accompanimentGroupId,
-      'displayOrder': displayOrder,
       'isAvailable': isAvailable,
+      'displayOrder': displayOrder,
       'createdAt': createdAt?.toIso8601String(),
     };
   }
 
-  String get priceLabel {
-    if (extraCharge == 0) return '';
-    return '+${extraCharge.toStringAsFixed(2)} KM';
-  }
-
-  // ← DODANA copyWith METODA
   Accompaniment copyWith({
     String? id,
+    String? accompanimentGroupId,
     String? name,
     double? extraCharge,
-    String? accompanimentGroupId,
-    int? displayOrder,
     bool? isAvailable,
+    int? displayOrder,
     DateTime? createdAt,
   }) {
     return Accompaniment(
       id: id ?? this.id,
+      accompanimentGroupId: accompanimentGroupId ?? this.accompanimentGroupId,
       name: name ?? this.name,
       extraCharge: extraCharge ?? this.extraCharge,
-      accompanimentGroupId: accompanimentGroupId ?? this.accompanimentGroupId,
-      displayOrder: displayOrder ?? this.displayOrder,
       isAvailable: isAvailable ?? this.isAvailable,
+      displayOrder: displayOrder ?? this.displayOrder,
       createdAt: createdAt ?? this.createdAt,
     );
   }
