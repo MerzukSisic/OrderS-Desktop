@@ -8,27 +8,14 @@ class ApiResponse<T> {
   final bool success;
   final int? statusCode;
 
-  ApiResponse({
-    this.data,
-    this.error,
-    required this.success,
-    this.statusCode,
-  });
+  ApiResponse({this.data, this.error, required this.success, this.statusCode});
 
   factory ApiResponse.success(T data, {int? statusCode}) {
-    return ApiResponse(
-      data: data,
-      success: true,
-      statusCode: statusCode,
-    );
+    return ApiResponse(data: data, success: true, statusCode: statusCode);
   }
 
   factory ApiResponse.failure(String error, {int? statusCode}) {
-    return ApiResponse(
-      error: error,
-      success: false,
-      statusCode: statusCode,
-    );
+    return ApiResponse(error: error, success: false, statusCode: statusCode);
   }
 }
 
@@ -42,21 +29,30 @@ class ApiClient {
   factory ApiClient() => _instance;
 
   ApiClient._internal() {
-    _dio = Dio(BaseOptions(
-      baseUrl: _getBaseUrl(),
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: _getBaseUrl(),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
     _setupInterceptors();
   }
 
   static String _getBaseUrl() {
-    // ✅ DESKTOP - Use 127.0.0.1 instead of localhost for macOS compatibility
+    // ✅ dart-define override (set via --dart-define=API_BASE_URL=...)
+    const apiUrl = String.fromEnvironment('API_BASE_URL');
+    if (apiUrl.isNotEmpty) {
+      debugPrint('🌐 API_BASE_URL from dart-define: $apiUrl');
+      return apiUrl;
+    }
+
+    // Fallback: Desktop
     if (defaultTargetPlatform == TargetPlatform.macOS ||
         defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.linux) {
@@ -64,48 +60,44 @@ class ApiClient {
       return 'http://127.0.0.1:5220/api';
     }
 
-    // Mobile platforms
-    if (kDebugMode) {
-      // Android emulator - use 10.0.2.2
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        debugPrint('📱 Android emulator detected - using 10.0.2.2:5220');
-        return 'http://10.0.2.2:5220/api';
-      }
-      
-      // iOS simulator - use localhost
-      debugPrint('📱 iOS simulator detected - using localhost:5220');
-      return 'http://localhost:5220/api';
+    // Fallback: Mobile
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      debugPrint('📱 Android emulator detected - using 10.0.2.2:5220');
+      return 'http://10.0.2.2:5220/api';
     }
-    
-    // Production
-    return 'https://your-production-url.com/api';
+
+    debugPrint('📱 iOS simulator detected - using localhost:5220');
+    return 'http://localhost:5220/api';
   }
 
   void _setupInterceptors() {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // Add auth token if available
           if (_token != null) {
             options.headers['Authorization'] = 'Bearer $_token';
           }
-
           debugPrint('🔵 REQUEST[${options.method}] => ${options.uri}');
           debugPrint('📤 Data: ${options.data}');
-          
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          debugPrint('🟢 RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
+          debugPrint(
+            '🟢 RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}',
+          );
           debugPrint('📥 Data: ${response.data}');
-          
           return handler.next(response);
         },
         onError: (error, handler) {
-          debugPrint('🔴 ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
+          debugPrint(
+            '🔴 ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}',
+          );
           debugPrint('❌ Message: ${error.message}');
           debugPrint('❌ Response: ${error.response?.data}');
-          
+          debugPrint('🔴 DioException Type: ${error.type}');
+          debugPrint('🔴 DioException Message: ${error.message}');
+          debugPrint('❌ DioException: ${error.message}');
+          debugPrint('❌ Response: ${error.response?.data}');
           return handler.next(error);
         },
       ),
@@ -115,7 +107,9 @@ class ApiClient {
   /// Set authentication token
   void setToken(String? token) {
     _token = token;
-    debugPrint('🔑 Token set: ${token != null ? "Yes (${token.substring(0, 20)}...)" : "No"}');
+    debugPrint(
+      '🔑 Using token: ${token != null ? "${token.substring(0, 20)}..." : "No"}',
+    );
   }
 
   /// Clear authentication token
@@ -132,14 +126,12 @@ class ApiClient {
   }) async {
     try {
       debugPrint('🔵 GET Request to: ${_dio.options.baseUrl}$path');
-      
-      final response = await _dio.get(
-        path,
-        queryParameters: queryParameters,
-      );
+      final response = await _dio.get(path, queryParameters: queryParameters);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = fromJson != null ? fromJson(response.data) : response.data as T;
+        final data = fromJson != null
+            ? fromJson(response.data)
+            : response.data as T;
         return ApiResponse.success(data, statusCode: response.statusCode);
       }
 
@@ -165,7 +157,6 @@ class ApiClient {
     try {
       debugPrint('🔵 POST Request to: ${_dio.options.baseUrl}$path');
       debugPrint('📤 Data: $data');
-      
       final response = await _dio.post(
         path,
         data: data,
@@ -173,8 +164,13 @@ class ApiClient {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = fromJson != null ? fromJson(response.data) : response.data as T;
-        return ApiResponse.success(responseData, statusCode: response.statusCode);
+        final responseData = fromJson != null
+            ? fromJson(response.data)
+            : response.data as T;
+        return ApiResponse.success(
+          responseData,
+          statusCode: response.statusCode,
+        );
       }
 
       return ApiResponse.failure(
@@ -198,7 +194,6 @@ class ApiClient {
   }) async {
     try {
       debugPrint('🔵 PUT Request to: ${_dio.options.baseUrl}$path');
-      
       final response = await _dio.put(
         path,
         data: data,
@@ -207,10 +202,18 @@ class ApiClient {
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         if (response.statusCode == 204 || response.data == null) {
-          return ApiResponse.success(null as T, statusCode: response.statusCode);
+          return ApiResponse.success(
+            null as T,
+            statusCode: response.statusCode,
+          );
         }
-        final responseData = fromJson != null ? fromJson(response.data) : response.data as T;
-        return ApiResponse.success(responseData, statusCode: response.statusCode);
+        final responseData = fromJson != null
+            ? fromJson(response.data)
+            : response.data as T;
+        return ApiResponse.success(
+          responseData,
+          statusCode: response.statusCode,
+        );
       }
 
       return ApiResponse.failure(
@@ -232,7 +235,6 @@ class ApiClient {
   }) async {
     try {
       debugPrint('🔵 DELETE Request to: ${_dio.options.baseUrl}$path');
-      
       final response = await _dio.delete(
         path,
         queryParameters: queryParameters,
@@ -266,11 +268,13 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        errorMessage = 'Connection timeout. Please check your internet connection.';
+        errorMessage =
+            'Connection timeout. Please check your internet connection.';
         break;
 
       case DioExceptionType.badResponse:
-        errorMessage = _extractErrorMessage(error.response?.data) ??
+        errorMessage =
+            _extractErrorMessage(error.response?.data) ??
             'Request failed with status ${error.response?.statusCode}';
         break;
 
@@ -279,15 +283,18 @@ class ApiClient {
         break;
 
       case DioExceptionType.connectionError:
-        errorMessage = 'No internet connection. Please check:\n'
-            '1. Is backend running? (http://localhost:5220)\n'
-            '2. Check network settings\n'
-            '3. Firewall blocking the connection?';
+        errorMessage =
+            'Cannot connect to backend. Please check:\n'
+            '1. Is Docker running? (docker ps)\n'
+            '2. Is orders_api container up?\n'
+            '3. Is port 5220 accessible?\n'
+            '4. Firewall blocking the connection?';
         debugPrint('💡 Backend URL: ${_dio.options.baseUrl}');
         break;
 
       default:
         errorMessage = 'An unexpected error occurred: ${error.message}';
+        debugPrint('💡 Backend URL: ${_dio.options.baseUrl}');
     }
 
     return ApiResponse.failure(errorMessage, statusCode: statusCode);
@@ -298,16 +305,13 @@ class ApiClient {
     if (data == null) return null;
 
     if (data is Map) {
-      // Common error formats
-      return data['message'] ?? 
-             data['error'] ?? 
-             data['title'] ??
-             data['detail'];
+      return data['message'] ??
+          data['error'] ??
+          data['title'] ??
+          data['detail'];
     }
 
-    if (data is String) {
-      return data;
-    }
+    if (data is String) return data;
 
     return null;
   }
