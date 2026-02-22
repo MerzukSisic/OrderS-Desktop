@@ -85,7 +85,7 @@ flutter run -d windows --dart-define=API_BASE_URL=http://localhost:5220/api
 
 ### Pokretanje prebuilt EXE-a:
 ```bash
-# Ekstraktovati build arhivu (šifra: fit)
+# Ekstraktovati build arhivu 
 7z x fit-build-26-02-22.zip
 
 # Pokrenuti aplikaciju
@@ -114,7 +114,7 @@ flutter build windows --release
 
 **Lokacija outputa:** `build/windows/x64/runner/Release/`
 
-Build arhiva se nalazi u root folderu repoa: `fit-build-26-02-22.zip` (split arhiva, šifra: `fit`).
+Build arhiva se nalazi u root folderu repoa: `fit-build-26-02-22.zip`.
 
 ---
 
@@ -137,8 +137,7 @@ rs2-desktop/
 │   │   └── ...
 │   └── main.dart
 ├── build/windows/x64/runner/Release/  # EXE output
-├── fit-build-26-02-22.zip             # Build arhiva (šifra: fit)
-└── .env.zip                           # Konfiguracijski fajl (šifra: fit)
+└── fit-build-26-02-22.zip             # Build arhiva 
 ```
 
 ---
