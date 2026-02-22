@@ -1,16 +1,146 @@
-# rs2_desktop
+# OrderS — Desktop Aplikacija
+**Autor:** Merzuk Šišić (IB220060)  
+**Predmet:** Razvoj softvera II  
+**Akademska godina:** 2024/2025
 
-A new Flutter project.
+---
 
-## Getting Started
+## 📋 Sadržaj
+1. [Opis aplikacije](#opis-aplikacije)
+2. [Tehnologije](#tehnologije)
+3. [Pokretanje aplikacije](#pokretanje-aplikacije)
+4. [Login podaci](#login-podaci)
+5. [Build Windows EXE](#build-windows-exe)
+6. [Struktura projekta](#struktura-projekta)
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 🎯 Opis aplikacije
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena je isključivo administratorima kafića. Koristi persistent sidebar navigaciju s IndexedStack arhitekturom — promjena sekcije ne uzrokuje rebuild sidebar-a.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Funkcionalnosti:
+
+**Dashboard:**
+- ✅ Stat kartice — ukupni prihod, broj narudžbi, aktivni stolovi, prosječna vrijednost
+- ✅ Revenue Chart — linijski grafikon prihoda po danima (fl_chart)
+- ✅ Top 5 najprodavanijih proizvoda
+- ✅ Tabela konobara s učinkom
+- ✅ Low stock upozorenja
+
+**Upravljanje proizvodima:**
+- ✅ Data tabela s pretraživanjem i CRUD akcijama
+- ✅ AccompanimentGroupManager — konfiguracija grupa prilagodbi
+- ✅ Upravljanje kategorijama s Material ikonama
+
+**Inventar:**
+- ✅ Pregled stanja zaliha s filtriranjem po statusu
+- ✅ AdjustInventoryDialog — dodaj/oduzmi/postavi količinu
+- ✅ InventoryLogsDialog — kompletna historija promjena
+
+**Nabavka (Procurement):**
+- ✅ Kreiranje narudžbi prema dobavljačima
+- ✅ Stripe Checkout integracija za kartično plaćanje
+- ✅ Automatsko ažuriranje statusa putem webhook-a
+
+**Upravljanje korisnicima:**
+- ✅ CRUD operacije s filtiranjem po ulozi
+- ✅ Aktivacija/deaktivacija naloga
+
+**Statistike:**
+- ✅ Multi-tab prikaz: prihodi (line chart), top proizvodi (bar chart), peak hours analiza
+- ✅ Filtriranje po periodu (7/14/30 dana)
+
+### Povezani repozitoriji:
+- ⚙️ **Backend API:** [OrdersAPI repo]
+- 📱 **Mobile aplikacija:** [orders_mobile repo]
+
+---
+
+## 🛠️ Tehnologije
+
+- **Flutter 3.19+** — Cross-platform desktop (Windows/macOS)
+- **Provider** — State management (ChangeNotifier pattern)
+- **Dio** — HTTP klijent s interceptorima za JWT
+- **shared_preferences** — Lokalno čuvanje JWT tokena
+- **fl_chart** — Interaktivni grafikoni za statistike
+
+---
+
+## 🚀 Pokretanje aplikacije
+
+### Preduvjeti:
+- Flutter SDK 3.19+ s Windows desktop podrškom
+- Pokrenuti backend: `docker-compose up --build` u OrdersAPI repou
+
+### Pokretanje iz source koda:
+```bash
+git clone <URL_OVOG_REPOA>
+cd rs2-desktop
+
+flutter pub get
+
+flutter run -d windows --dart-define=API_BASE_URL=http://localhost:5220/api
+```
+
+### Pokretanje prebuilt EXE-a:
+```bash
+# Ekstraktovati build arhivu (šifra: fit)
+7z x fit-build-26-02-22.zip
+
+# Pokrenuti aplikaciju
+cd build/windows/x64/runner/Release/
+orders_flutter_desktop.exe
+```
+
+---
+
+## 🔐 Login podaci
+
+| Email | Lozinka | Uloga |
+|---|---|---|
+| admin@orders.com | password123 | Admin |
+
+> **Napomena:** Desktop aplikacija je dostupna samo Admin korisnicima. Backend mora biti pokrenut na `localhost:5220`.
+
+---
+
+## 📦 Build Windows EXE
+
+```bash
+flutter clean
+flutter build windows --release
+```
+
+**Lokacija outputa:** `build/windows/x64/runner/Release/`
+
+Build arhiva se nalazi u root folderu repoa: `fit-build-26-02-22.zip` (split arhiva, šifra: `fit`).
+
+---
+
+## 📁 Struktura projekta
+
+```
+rs2-desktop/
+├── lib/
+│   ├── core/
+│   │   ├── services/api/          # API servisi
+│   │   └── config/                # EnvConfig — dart-define API adresa
+│   ├── models/                    # Data modeli
+│   ├── providers/                 # State management (Provider)
+│   ├── screens/
+│   │   ├── auth/                  # Login ekran
+│   │   └── admin/                 # Dashboard, Proizvodi, Inventar,
+│   │                              # Nabavka, Korisnici, Statistike
+│   ├── widgets/                   # Reusable komponente
+│   │   ├── admin_sidebar.dart     # Persistent sidebar navigacija
+│   │   └── ...
+│   └── main.dart
+├── build/windows/x64/runner/Release/  # EXE output
+├── fit-build-26-02-22.zip             # Build arhiva (šifra: fit)
+└── .env.zip                           # Konfiguracijski fajl (šifra: fit)
+```
+
+---
+
+*OrderS — RS2 2024/2025 — Merzuk Šišić — IB220060*
