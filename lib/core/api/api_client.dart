@@ -173,6 +173,10 @@ class ApiClient {
         );
       }
 
+      if (response.statusCode == 204) {
+        return ApiResponse.success(null as T, statusCode: 204);
+      }
+
       return ApiResponse.failure(
         'Request failed with status: ${response.statusCode}',
         statusCode: response.statusCode,

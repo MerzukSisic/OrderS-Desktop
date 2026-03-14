@@ -34,14 +34,23 @@ OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena
 - ✅ Upravljanje kategorijama s Material ikonama
 
 **Inventar:**
-- ✅ Pregled stanja zaliha s filtriranjem po statusu
+- ✅ Pregled stanja zaliha s filtriranjem po statusu i skladištu
 - ✅ AdjustInventoryDialog — dodaj/oduzmi/postavi količinu
 - ✅ InventoryLogsDialog — kompletna historija promjena
+- ✅ Export PDF inventara (NotoSans font, otvara se u sistemskom pregledaču)
 
 **Nabavka (Procurement):**
 - ✅ Kreiranje narudžbi prema dobavljačima
 - ✅ Stripe Checkout integracija za kartično plaćanje
 - ✅ Automatsko ažuriranje statusa putem webhook-a
+
+**Upravljanje stolovima:**
+- ✅ CRUD operacije — kreiranje/uređivanje/brisanje stolova
+- ✅ Filtriranje po statusu (Available/Occupied/Reserved)
+
+**Upravljanje skladištima:**
+- ✅ CRUD operacije — kreiranje/uređivanje/brisanje skladišta
+- ✅ Pregled i upravljanje production inventarom po skladištu
 
 **Upravljanje korisnicima:**
 - ✅ CRUD operacije s filtiranjem po ulozi
@@ -50,6 +59,7 @@ OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena
 **Statistike:**
 - ✅ Multi-tab prikaz: prihodi (line chart), top proizvodi (bar chart), peak hours analiza
 - ✅ Filtriranje po periodu (7/14/30 dana)
+- ✅ Export PDF izvještaja (NotoSans font, otvara se u sistemskom pregledaču)
 
 ### Povezani repozitoriji:
 - ⚙️ **Backend API:** [OrdersAPI repo]
@@ -64,6 +74,7 @@ OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena
 - **Dio** — HTTP klijent s interceptorima za JWT
 - **shared_preferences** — Lokalno čuvanje JWT tokena
 - **fl_chart** — Interaktivni grafikoni za statistike
+- **pdf + printing** — Generisanje PDF izvještaja s Unicode (NotoSans) fontom
 
 ---
 
@@ -80,7 +91,11 @@ cd rs2-desktop
 
 flutter pub get
 
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:5220/api
+# macOS
+flutter run -d macos --dart-define=API_BASE_URL=http://localhost:5220/api --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders
+
+# Windows
+flutter run -d windows --dart-define=API_BASE_URL=http://localhost:5220/api --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders
 ```
 
 ### Pokretanje prebuilt EXE-a:
@@ -131,7 +146,8 @@ rs2-desktop/
 │   ├── screens/
 │   │   ├── auth/                  # Login ekran
 │   │   └── admin/                 # Dashboard, Proizvodi, Inventar,
-│   │                              # Nabavka, Korisnici, Statistike
+│   │                              # Nabavka, Korisnici, Statistike,
+│   │                              # Stolovi, Skladišta
 │   ├── widgets/                   # Reusable komponente
 │   │   ├── admin_sidebar.dart     # Persistent sidebar navigacija
 │   │   └── ...

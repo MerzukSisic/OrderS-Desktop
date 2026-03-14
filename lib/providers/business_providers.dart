@@ -309,19 +309,17 @@ class InventoryProvider with ChangeNotifier {
 
   /// Fetch total stock value
   Future<void> fetchTotalStockValue({String? storeId}) async {
-    _clearError();
-
     try {
       final response = await _apiService.getTotalStockValue(storeId: storeId);
-
       if (response.success && response.data != null) {
         _totalStockValue = response.data;
-        notifyListeners();
       } else {
-        _setError(response.error ?? 'Failed to fetch stock value');
+        _totalStockValue = 0.0;
       }
-    } catch (e) {
-      _setError('Error fetching stock value: $e');
+      notifyListeners();
+    } catch (_) {
+      _totalStockValue = 0.0;
+      notifyListeners();
     }
   }
 
@@ -372,6 +370,110 @@ class InventoryProvider with ChangeNotifier {
       }
     } catch (e) {
       _setError('Error adjusting inventory: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Create store product
+  Future<bool> createStoreProduct({
+    required String storeId,
+    required String name,
+    String? description,
+    required double purchasePrice,
+    required int currentStock,
+    required int minimumStock,
+    required String unit,
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final response = await _apiService.createStoreProduct(
+        storeId: storeId,
+        name: name,
+        description: description,
+        purchasePrice: purchasePrice,
+        currentStock: currentStock,
+        minimumStock: minimumStock,
+        unit: unit,
+      );
+
+      if (response.success && response.data != null) {
+        _storeProducts.add(response.data!);
+        notifyListeners();
+        return true;
+      } else {
+        _setError(response.error ?? 'Failed to create store product');
+        return false;
+      }
+    } catch (e) {
+      _setError('Error creating store product: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Update store product
+  Future<bool> updateStoreProduct(
+    String id, {
+    String? name,
+    String? description,
+    double? purchasePrice,
+    int? currentStock,
+    int? minimumStock,
+    String? unit,
+    String? storeId,
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final response = await _apiService.updateStoreProduct(
+        id,
+        name: name,
+        description: description,
+        purchasePrice: purchasePrice,
+        currentStock: currentStock,
+        minimumStock: minimumStock,
+        unit: unit,
+      );
+
+      if (response.success) {
+        await fetchStoreProducts(storeId: storeId);
+        return true;
+      } else {
+        _setError(response.error ?? 'Failed to update store product');
+        return false;
+      }
+    } catch (e) {
+      _setError('Error updating store product: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Delete store product
+  Future<bool> deleteStoreProduct(String id) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final response = await _apiService.deleteStoreProduct(id);
+
+      if (response.success) {
+        _storeProducts.removeWhere((p) => p.id == id);
+        notifyListeners();
+        return true;
+      } else {
+        _setError(response.error ?? 'Failed to delete store product');
+        return false;
+      }
+    } catch (e) {
+      _setError('Error deleting store product: $e');
       return false;
     } finally {
       _setLoading(false);
@@ -466,6 +568,7 @@ class StoresProvider with ChangeNotifier {
     required String name,
     String? address,
     String? phoneNumber,
+    bool isExternal = false,
   }) async {
     _setLoading(true);
     _clearError();
@@ -475,6 +578,7 @@ class StoresProvider with ChangeNotifier {
         name: name,
         address: address,
         phoneNumber: phoneNumber,
+        isExternal: isExternal,
       );
 
       if (response.success && response.data != null) {
@@ -498,6 +602,7 @@ class StoresProvider with ChangeNotifier {
     String? name,
     String? address,
     String? phoneNumber,
+    bool? isExternal,
   }) async {
     _setLoading(true);
     _clearError();
@@ -508,6 +613,7 @@ class StoresProvider with ChangeNotifier {
         name: name,
         address: address,
         phoneNumber: phoneNumber,
+        isExternal: isExternal,
       );
 
       if (response.success) {

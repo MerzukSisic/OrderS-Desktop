@@ -5,6 +5,7 @@ import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/revenue_chart_widget.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/stat_card.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
+import 'package:rs2_desktop/providers/notifications_recommendations_providers.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadAllData() async {
     final provider = context.read<StatisticsProvider>();
-    
+
     await Future.wait([
       provider.fetchDashboardStats(),
       provider.fetchTopProducts(count: 5, days: 30),
@@ -38,20 +39,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         fromDate: DateTime.now().subtract(const Duration(days: 30)),
         toDate: DateTime.now(),
       ),
+      context.read<RecommendationsProvider>().fetchAll(),
     ]);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StatisticsProvider>(
-      builder: (context, provider, child) {
+    return Consumer2<StatisticsProvider, RecommendationsProvider>(
+      builder: (context, provider, recProvider, child) {
         if (provider.isLoading && provider.dashboardStats == null) {
           return const Center(child: CircularProgressIndicator());
         }
         if (provider.error != null && provider.dashboardStats == null) {
           return _buildError(provider.error!);
         }
-        return _buildContent(provider);
+        return _buildContent(provider, recProvider);
       },
     );
   }
@@ -74,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildContent(StatisticsProvider provider) {
+  Widget _buildContent(StatisticsProvider provider, RecommendationsProvider recProvider) {
     final stats = provider.dashboardStats;
     if (stats == null) return const SizedBox.shrink();
 
@@ -107,8 +109,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             _buildPeakHours(provider.peakHours),
+            const SizedBox(height: 24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (recProvider.popularProducts.isNotEmpty)
+                  Expanded(child: _buildRecommendationSection(
+                    title: 'Popular Products',
+                    icon: Icons.local_fire_department,
+                    color: Colors.orange,
+                    products: recProvider.popularProducts,
+                  )),
+                if (recProvider.popularProducts.isNotEmpty && recProvider.timeBasedProducts.isNotEmpty)
+                  const SizedBox(width: 24),
+                if (recProvider.timeBasedProducts.isNotEmpty)
+                  Expanded(child: _buildRecommendationSection(
+                    title: 'Good Right Now',
+                    icon: Icons.access_time,
+                    color: Colors.teal,
+                    products: recProvider.timeBasedProducts,
+                  )),
+              ],
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRecommendationSection({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<dynamic> products,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...products.take(5).map((p) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.restaurant_menu, color: color, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.name, style: const TextStyle(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                      Text(
+                        NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(p.price),
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )),
+        ],
       ),
     );
   }

@@ -1,12 +1,17 @@
+import 'dart:io';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/models/statistics/dashboard_stats.dart';
-import 'package:rs2_desktop/models/statistics/product_sales.dart';
 import 'package:rs2_desktop/models/statistics/peak_hour.dart';
+import 'package:rs2_desktop/models/statistics/product_sales.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -29,6 +34,111 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         _loadData();
       }
     });
+  }
+
+  Future<void> _exportStatisticsPdf(StatisticsProvider provider) async {
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final fontBold = await PdfGoogleFonts.notoSansBold();
+    final theme = pw.ThemeData.withFont(base: font, bold: fontBold);
+    final pdf = pw.Document();
+    final now = DateFormat('dd.MM.yyyy HH:mm').format(DateTime.now());
+    final stats = provider.dashboardStats;
+    final topProducts = provider.topProducts;
+    final peakHours = provider.peakHours;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        theme: theme,
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Business Analytics Report',
+                style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Generated: $now  |  Period: Last $_selectedPeriod days',
+                style: const pw.TextStyle(fontSize: 10)),
+            pw.SizedBox(height: 8),
+            pw.Divider(),
+          ],
+        ),
+        build: (context) => [
+          if (stats != null) ...[
+            pw.Text('Overview',
+                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.TableHelper.fromTextArray(
+              headers: ['Metric', 'Value'],
+              data: [
+                ['Today Revenue', '\$${stats.todayRevenue.toStringAsFixed(2)}'],
+                ['Week Revenue', '\$${stats.weekRevenue.toStringAsFixed(2)}'],
+                ['Month Revenue', '\$${stats.monthRevenue.toStringAsFixed(2)}'],
+                ['Today Orders', '${stats.todayOrders}'],
+                ['Active Tables', '${stats.activeTables}'],
+                ['Low Stock Items', '${stats.lowStockItems}'],
+              ],
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              cellStyle: const pw.TextStyle(fontSize: 10),
+            ),
+            pw.SizedBox(height: 16),
+          ],
+          if (topProducts.isNotEmpty) ...[
+            pw.Text('Top Products',
+                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.TableHelper.fromTextArray(
+              headers: ['Product', 'Category', 'Qty Sold', 'Revenue', '%'],
+              data: topProducts.map((p) => [
+                p.productName,
+                p.categoryName,
+                '${p.quantitySold}',
+                '\$${p.revenue.toStringAsFixed(2)}',
+                '${p.percentage.toStringAsFixed(1)}%',
+              ]).toList(),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+            ),
+            pw.SizedBox(height: 16),
+          ],
+          if (stats != null && stats.topWaiters.isNotEmpty) ...[
+            pw.Text('Staff Performance',
+                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.TableHelper.fromTextArray(
+              headers: ['Staff Member', 'Orders', 'Revenue', 'Avg Order'],
+              data: stats.topWaiters.map((w) => [
+                w.waiterName,
+                '${w.totalOrders}',
+                '\$${w.totalRevenue.toStringAsFixed(2)}',
+                '\$${w.averageOrderValue.toStringAsFixed(2)}',
+              ]).toList(),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+            ),
+            pw.SizedBox(height: 16),
+          ],
+          if (peakHours.isNotEmpty) ...[
+            pw.Text('Peak Hours',
+                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.TableHelper.fromTextArray(
+              headers: ['Hour', 'Order Count', 'Revenue'],
+              data: peakHours.map((h) => [
+                '${h.hour}:00',
+                '${h.orderCount}',
+                '\$${h.revenue.toStringAsFixed(2)}',
+              ]).toList(),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final filePath = '${Directory.systemTemp.path}/statistics_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    await File(filePath).writeAsBytes(bytes);
+    await Process.run('open', [filePath]);
   }
 
   Future<void> _loadData() async {
@@ -79,7 +189,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
         return Column(
           children: [
-            _buildHeader(),
+            _buildHeader(provider),
             const SizedBox(height: 16),
             _buildTabs(),
             const SizedBox(height: 16),
@@ -92,7 +202,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StatisticsProvider provider) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -150,6 +260,16 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ),
               ),
               const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: () => _exportStatisticsPdf(provider),
+                icon: const Icon(Icons.picture_as_pdf, size: 18),
+                label: const Text('Export PDF'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+              const SizedBox(width: 12),
               IconButton(
                 onPressed: _loadData,
                 icon: const Icon(Icons.refresh),

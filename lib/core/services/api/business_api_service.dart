@@ -290,6 +290,7 @@ class StoresApiService {
     required String name,
     String? address,
     String? phoneNumber,
+    bool isExternal = false,
   }) async {
     return await _client.post(
       '/stores',
@@ -297,6 +298,7 @@ class StoresApiService {
         'name': name,
         'address': address,
         'phoneNumber': phoneNumber,
+        'isExternal': isExternal,
       },
       fromJson: (json) => Store.fromJson(json),
     );
@@ -308,6 +310,7 @@ class StoresApiService {
     String? name,
     String? address,
     String? phoneNumber,
+    bool? isExternal,
   }) async {
     return await _client.put(
       '/stores/$id',
@@ -315,6 +318,7 @@ class StoresApiService {
         if (name != null) 'name': name,
         if (address != null) 'address': address,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (isExternal != null) 'isExternal': isExternal,
       },
     );
   }

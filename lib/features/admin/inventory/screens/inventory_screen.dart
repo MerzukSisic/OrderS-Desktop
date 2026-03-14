@@ -1,11 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/adjust_inventory_dialog.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_logs_dialog.dart';
+import 'package:rs2_desktop/models/inventory/store_product_model.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_card.dart';
-import 'package:intl/intl.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -37,6 +42,60 @@ class _InventoryScreenState extends State<InventoryScreen> {
       inventoryProvider.fetchTotalStockValue(storeId: _selectedStoreId),
       storesProvider.fetchStores(),
     ]);
+  }
+
+  Future<void> _exportInventoryPdf(List<StoreProductModel> products) async {
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final fontBold = await PdfGoogleFonts.notoSansBold();
+    final theme = pw.ThemeData.withFont(base: font, bold: fontBold);
+    final pdf = pw.Document();
+    final now = DateFormat('dd.MM.yyyy HH:mm').format(DateTime.now());
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        theme: theme,
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Inventory Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Generated: $now', style: const pw.TextStyle(fontSize: 10)),
+            pw.SizedBox(height: 8),
+            pw.Divider(),
+          ],
+        ),
+        build: (context) => [
+          pw.TableHelper.fromTextArray(
+            headers: ['Product', 'Store', 'Stock', 'Min Stock', 'Unit', 'Purchase Price', 'Status'],
+            data: products.map((p) => [
+              p.name,
+              p.storeName,
+              p.currentStock.toString(),
+              p.minimumStock.toString(),
+              p.unit,
+              '\$${p.purchasePrice.toStringAsFixed(2)}',
+              p.isLowStock ? 'LOW STOCK' : (p.currentStock == 0 ? 'OUT OF STOCK' : 'OK'),
+            ]).toList(),
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+            cellStyle: const pw.TextStyle(fontSize: 9),
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              6: pw.Alignment.center,
+            },
+          ),
+          pw.SizedBox(height: 16),
+          pw.Text(
+            'Total items: ${products.length}  |  Low stock: ${products.where((p) => p.isLowStock).length}  |  Out of stock: ${products.where((p) => p.currentStock == 0).length}',
+            style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await pdf.save();
+    final filePath = '${Directory.systemTemp.path}/inventory_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    await File(filePath).writeAsBytes(bytes);
+    await Process.run('open', [filePath]);
   }
 
   @override
@@ -125,8 +184,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ),
                 ],
               ),
-              if (storesProvider.stores.isNotEmpty)
-                _buildStoreFilter(storesProvider),
+              Row(
+                children: [
+                  if (storesProvider.stores.isNotEmpty)
+                    _buildStoreFilter(storesProvider),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _exportInventoryPdf(inventoryProvider.storeProducts),
+                    icon: const Icon(Icons.picture_as_pdf, size: 18),
+                    label: const Text('Export PDF'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 16),

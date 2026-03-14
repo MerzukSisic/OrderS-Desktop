@@ -8,7 +8,9 @@ import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/products_provider.dart';
+import 'package:rs2_desktop/providers/tables_provider.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
+import 'package:rs2_desktop/providers/notifications_recommendations_providers.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
 
 void main() async {
@@ -42,6 +44,13 @@ class OrdersDesktopApp extends StatelessWidget {
 
         // ✅ DODATO: Payments Provider
         ChangeNotifierProvider(create: (_) => PaymentsProvider()),
+
+        // Notifications & Recommendations
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (_) => RecommendationsProvider()),
+
+        // Tables
+        ChangeNotifierProvider(create: (_) => TablesProvider()),
 
         // User Management
         ChangeNotifierProvider(create: (_) => UsersProvider()),

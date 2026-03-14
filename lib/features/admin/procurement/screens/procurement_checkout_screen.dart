@@ -296,6 +296,30 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                       ),
                     ),
                   ),
+                  if (order.status == 'Paid') ...[
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _isProcessing ? null : () => _receiveOrder(order),
+                        icon: _isProcessing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.inventory_2),
+                        label: const Text('Receive Order'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton.icon(
@@ -1058,6 +1082,40 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         ],
       ),
     );
+  }
+
+  // ============ RECEIVE ORDER ============
+  Future<void> _receiveOrder(dynamic order) async {
+    setState(() => _isProcessing = true);
+
+    final items = (order.items as List).map((item) => {
+      'itemId': item.id,
+      'receivedQuantity': item.quantity,
+    }).toList();
+
+    final success = await context.read<ProcurementProvider>().receiveProcurement(
+      procurementOrderId: order.id,
+      items: items,
+    );
+
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Order received — inventory updated'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.read<ProcurementProvider>().error ?? 'Failed to receive order'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   // ============ STRIPE CHECKOUT PAYMENT HANDLING ============

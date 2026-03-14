@@ -8,6 +8,16 @@ import 'package:rs2_desktop/features/admin/products/screens/product_edit_screen.
 import 'package:rs2_desktop/features/admin/users/screens/user_create_screen.dart';
 import 'package:rs2_desktop/features/admin/users/screens/user_edit_screen.dart';
 import 'package:rs2_desktop/features/admin/procurement/screens/procurement_checkout_screen.dart';
+import 'package:rs2_desktop/features/admin/tables/screens/table_create_screen.dart';
+import 'package:rs2_desktop/features/admin/tables/screens/table_edit_screen.dart';
+import 'package:rs2_desktop/features/admin/stores/screens/store_create_screen.dart';
+import 'package:rs2_desktop/features/admin/stores/screens/store_edit_screen.dart';
+import 'package:rs2_desktop/features/admin/stores/screens/store_products_screen.dart';
+import 'package:rs2_desktop/features/admin/stores/screens/store_product_create_screen.dart';
+import 'package:rs2_desktop/features/admin/stores/screens/store_product_edit_screen.dart';
+import 'package:rs2_desktop/models/tables/table_model.dart';
+import 'package:rs2_desktop/models/inventory/store_model.dart';
+import 'package:rs2_desktop/models/inventory/store_product_model.dart';
 
 class AppRouter {
   // Auth Routes
@@ -21,6 +31,8 @@ class AppRouter {
   static const String adminProcurement = '/admin/procurement';
   static const String adminUsers = '/admin/users';
   static const String adminStatistics = '/admin/statistics';
+  static const String adminTables = '/admin/tables';
+  static const String adminStores = '/admin/stores';
 
   // Sub-routes (create/edit)
   static const String adminProductCreate = '/admin/products/create';
@@ -30,6 +42,13 @@ class AppRouter {
   static const String adminUserCreate = '/admin/users/create';
   static const String adminUserEdit = '/admin/users/edit';
   static const String adminProcurementCheckout = '/admin/procurement/checkout';
+  static const String adminTableCreate = '/admin/tables/create';
+  static const String adminTableEdit = '/admin/tables/edit';
+  static const String adminStoreCreate = '/admin/stores/create';
+  static const String adminStoreEdit = '/admin/stores/edit';
+  static const String adminStoreProducts = '/admin/stores/products';
+  static const String adminStoreProductCreate = '/admin/stores/products/create';
+  static const String adminStoreProductEdit = '/admin/stores/products/edit';
 
   /// Map route names to screen indexes
   static int getIndexForRoute(String route) {
@@ -48,6 +67,10 @@ class AppRouter {
         return 5;
       case adminStatistics:
         return 6;
+      case adminTables:
+        return 7;
+      case adminStores:
+        return 8;
       default:
         return 0;
     }
@@ -93,6 +116,16 @@ class AppRouter {
       case adminStatistics:
         return MaterialPageRoute(
           builder: (_) => const AdminLayoutScreen(initialIndex: 6),
+        );
+
+      case adminTables:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 7),
+        );
+
+      case adminStores:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 8),
         );
 
       // Sub-routes (full screen modals - BEZ sidebar)
@@ -159,6 +192,78 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => ProcurementCheckoutScreen(orderId: orderId),
+          fullscreenDialog: true,
+        );
+
+      case adminTableCreate:
+        return MaterialPageRoute(
+          builder: (_) => const TableCreateScreen(),
+          fullscreenDialog: true,
+        );
+
+      case adminTableEdit:
+        final table = settings.arguments as TableModel?;
+        if (table == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 7),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => TableEditScreen(table: table),
+          fullscreenDialog: true,
+        );
+
+      case adminStoreCreate:
+        return MaterialPageRoute(
+          builder: (_) => const StoreCreateScreen(),
+          fullscreenDialog: true,
+        );
+
+      case adminStoreEdit:
+        final store = settings.arguments as Store?;
+        if (store == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => StoreEditScreen(store: store),
+          fullscreenDialog: true,
+        );
+
+      case adminStoreProducts:
+        final store = settings.arguments as Store?;
+        if (store == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => StoreProductsScreen(store: store),
+          fullscreenDialog: true,
+        );
+
+      case adminStoreProductCreate:
+        final store = settings.arguments as Store?;
+        if (store == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => StoreProductCreateScreen(store: store),
+          fullscreenDialog: true,
+        );
+
+      case adminStoreProductEdit:
+        final product = settings.arguments as StoreProductModel?;
+        if (product == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => StoreProductEditScreen(product: product),
           fullscreenDialog: true,
         );
 

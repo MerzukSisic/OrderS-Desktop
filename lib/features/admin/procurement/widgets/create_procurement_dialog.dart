@@ -19,6 +19,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
   final _notesController = TextEditingController();
   
   String? _selectedStoreId;
+  String? _selectedSourceStoreId;
   List<Map<String, dynamic>> _items = [];
   bool _isLoading = false;
 
@@ -73,7 +74,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.add_shopping_cart, color: AppColors.primary, size: 24),
@@ -122,35 +123,72 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
                 return const CircularProgressIndicator();
               }
 
-              return DropdownButtonFormField<String>(
-                value: _selectedStoreId,
-                decoration: InputDecoration(
-                  labelText: 'Store',
-                  filled: true,
-                  fillColor: AppColors.surfaceVariant,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.border),
+              final internalStores = provider.stores.where((s) => !s.isExternal).toList();
+
+              return Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: _selectedStoreId,
+                    decoration: InputDecoration(
+                      labelText: 'Destination Store',
+                      filled: true,
+                      fillColor: AppColors.surfaceVariant,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: AppColors.border),
+                      ),
+                    ),
+                    dropdownColor: AppColors.surfaceVariant,
+                    items: internalStores.map((store) {
+                      return DropdownMenuItem(
+                        value: store.id,
+                        child: Text(store.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStoreId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a store';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                dropdownColor: AppColors.surfaceVariant,
-                items: provider.stores.map((store) {
-                  return DropdownMenuItem(
-                    value: store.id,
-                    child: Text(store.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedStoreId = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a store';
-                  }
-                  return null;
-                },
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String?>(
+                    value: _selectedSourceStoreId,
+                    decoration: InputDecoration(
+                      labelText: 'Source Store (optional — leave empty for external supplier)',
+                      filled: true,
+                      fillColor: AppColors.surfaceVariant,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: AppColors.border),
+                      ),
+                    ),
+                    dropdownColor: AppColors.surfaceVariant,
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('— None (enter supplier name below) —'),
+                      ),
+                      ...provider.stores.where((s) => s.isExternal).map((store) {
+                        return DropdownMenuItem<String?>(
+                          value: store.id,
+                          child: Text(store.name),
+                        );
+                      }),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSourceStoreId = value;
+                      });
+                    },
+                  ),
+                ],
               );
             },
           ),
@@ -373,6 +411,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
     showDialog(
       context: context,
       builder: (context) => _AddItemDialog(
+        destinationStoreId: _selectedSourceStoreId,
         onAdd: (item) {
           setState(() {
             _items.add(item);
@@ -401,6 +440,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
     try {
       final success = await context.read<ProcurementProvider>().createProcurementOrder(
             storeId: _selectedStoreId!,
+            sourceStoreId: _selectedSourceStoreId,
             supplier: _supplierController.text,
             notes: _notesController.text.isEmpty ? null : _notesController.text,
             items: _items,
@@ -447,8 +487,9 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
 // Add Item Dialog
 class _AddItemDialog extends StatefulWidget {
   final Function(Map<String, dynamic>) onAdd;
+  final String? destinationStoreId;
 
-  const _AddItemDialog({required this.onAdd});
+  const _AddItemDialog({required this.onAdd, this.destinationStoreId});
 
   @override
   State<_AddItemDialog> createState() => _AddItemDialogState();
@@ -459,12 +500,27 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   final _unitCostController = TextEditingController();
   String? _selectedProductId;
   String? _selectedProductName;
+  int? _availableStock;
+  String? _stockUnit;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantityController.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _quantityController.dispose();
     _unitCostController.dispose();
     super.dispose();
+  }
+
+  bool get _stockInsufficient {
+    if (_availableStock == null || _quantityController.text.isEmpty) return false;
+    final qty = int.tryParse(_quantityController.text);
+    if (qty == null) return false;
+    return qty > _availableStock!;
   }
 
   @override
@@ -488,8 +544,28 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             const SizedBox(height: 24),
             Consumer<InventoryProvider>(
               builder: (context, provider, child) {
-                if (provider.storeProducts.isEmpty) {
+                final products = widget.destinationStoreId != null
+                    ? provider.storeProducts.where((p) => p.storeId == widget.destinationStoreId).toList()
+                    : provider.storeProducts;
+
+                if (provider.isLoading) {
                   return const CircularProgressIndicator();
+                }
+
+                if (products.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      widget.destinationStoreId != null
+                          ? 'No products found in this source store.'
+                          : 'No products available.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  );
                 }
 
                 return DropdownButtonFormField<String>(
@@ -503,18 +579,19 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                     ),
                   ),
                   dropdownColor: AppColors.surfaceVariant,
-                  items: provider.storeProducts.map((product) {
+                  items: products.map((product) {
                     return DropdownMenuItem(
                       value: product.id,
                       child: Text(product.name),
                     );
                   }).toList(),
                   onChanged: (value) {
+                    final product = products.firstWhere((p) => p.id == value);
                     setState(() {
                       _selectedProductId = value;
-                      _selectedProductName = provider.storeProducts
-                          .firstWhere((p) => p.id == value)
-                          .name;
+                      _selectedProductName = product.name;
+                      _availableStock = product.currentStock;
+                      _stockUnit = product.unit;
                     });
                   },
                 );
@@ -530,6 +607,13 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+                helperText: _availableStock != null
+                    ? 'Available: $_availableStock $_stockUnit'
+                    : null,
+                helperStyle: TextStyle(color: AppColors.textSecondary),
+                errorText: _stockInsufficient
+                    ? 'Insufficient stock — only $_availableStock $_stockUnit available'
+                    : null,
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -557,21 +641,20 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_selectedProductId == null ||
-                        _quantityController.text.isEmpty ||
-                        _unitCostController.text.isEmpty) {
-                      return;
-                    }
-
-                    widget.onAdd({
-                      'storeProductId': _selectedProductId!,
-                      'productName': _selectedProductName!,
-                      'quantity': int.parse(_quantityController.text),
-                      'unitCost': double.parse(_unitCostController.text),
-                    });
-                    Navigator.pop(context);
-                  },
+                  onPressed: _selectedProductId == null ||
+                          _quantityController.text.isEmpty ||
+                          _unitCostController.text.isEmpty ||
+                          _stockInsufficient
+                      ? null
+                      : () {
+                          widget.onAdd({
+                            'storeProductId': _selectedProductId!,
+                            'productName': _selectedProductName!,
+                            'quantity': int.parse(_quantityController.text),
+                            'unitCost': double.parse(_unitCostController.text),
+                          });
+                          Navigator.pop(context);
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
