@@ -1,12 +1,27 @@
 import 'package:flutter/foundation.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/services/api/misc_api_services.dart';
 import 'package:rs2_desktop/models/procurement/procurement_order_model.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+class PaymentInitiationResult {
+  final bool success;
+  final String userMessage;
+  final String? checkoutUrl;
+
+  const PaymentInitiationResult({
+    required this.success,
+    required this.userMessage,
+    this.checkoutUrl,
+  });
+}
 
 // ==================== PROCUREMENT PROVIDER ====================
 
 class ProcurementProvider with ChangeNotifier {
-  final ProcurementApiService _apiService = ProcurementApiService();
+  final ProcurementApiService _apiService;
+
+  ProcurementProvider({ProcurementApiService? apiService})
+    : _apiService = apiService ?? ProcurementApiService();
 
   // State
   List<ProcurementOrderModel> _procurementOrders = [];
@@ -45,7 +60,12 @@ class ProcurementProvider with ChangeNotifier {
         _setError(response.error ?? 'Failed to fetch procurement orders');
       }
     } catch (e) {
-      _setError('Error fetching procurement orders: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to load procurement orders right now.',
+        ).userMessage,
+      );
     } finally {
       _setLoading(false);
     }
@@ -64,7 +84,12 @@ class ProcurementProvider with ChangeNotifier {
         _setError(response.error ?? 'Failed to fetch order');
       }
     } catch (e) {
-      _setError('Error fetching order: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to load this order right now.',
+        ).userMessage,
+      );
     } finally {
       _setLoading(false);
     }
@@ -98,49 +123,55 @@ class ProcurementProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Error creating procurement order: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to create the order right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  /// ✅ NEW: Initiate Stripe Checkout Payment
-  /// Opens browser with Stripe Checkout URL
-  /// Payment is confirmed automatically via webhook
-  Future<bool> initiatePayment(String procurementOrderId) async {
+  /// Creates a Stripe Checkout session and returns URL + user-safe message.
+  Future<PaymentInitiationResult> initiatePayment(
+    String procurementOrderId,
+  ) async {
     _setLoading(true);
     _clearError();
 
     try {
       debugPrint('🔵 Creating checkout session for order: $procurementOrderId');
-      
-      final response = await _apiService.createCheckoutSession(procurementOrderId);
+
+      final response = await _apiService.createCheckoutSession(
+        procurementOrderId,
+      );
 
       if (response.success && response.data != null) {
-        final checkoutUrl = response.data!;
-        debugPrint('🔗 Stripe Checkout URL: $checkoutUrl');
-
-        // Open Stripe Checkout in browser
-        final uri = Uri.parse(checkoutUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          debugPrint('✅ Stripe Checkout opened in browser');
-          return true;
-        } else {
-          _setError('Could not open Stripe Checkout');
-          debugPrint('❌ Failed to launch URL: $checkoutUrl');
-          return false;
-        }
-      } else {
-        _setError(response.error ?? 'Failed to create checkout session');
-        debugPrint('❌ Checkout Session Error: ${response.error}');
-        return false;
+        return PaymentInitiationResult(
+          success: true,
+          checkoutUrl: response.data!,
+          userMessage: 'Checkout is ready.',
+        );
       }
+
+      final message = UiErrorMapper.userMessageFromRaw(
+        response.error,
+        fallback: 'Unable to start checkout right now.',
+      );
+      _setError(message);
+      debugPrint('❌ Checkout Session Error: ${response.error}');
+      return PaymentInitiationResult(success: false, userMessage: message);
     } catch (e) {
-      _setError('Error initiating payment: $e');
+      final message = UiErrorMapper.fromException(
+        e,
+        fallback: 'Unable to start checkout right now.',
+      ).userMessage;
+      _setError(message);
       debugPrint('❌ Payment Initiation Error: $e');
-      return false;
+      return PaymentInitiationResult(success: false, userMessage: message);
     } finally {
       _setLoading(false);
     }
@@ -167,7 +198,12 @@ class ProcurementProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Error updating status: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to update order status right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -197,7 +233,12 @@ class ProcurementProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Error receiving procurement: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to mark this order as received right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -232,7 +273,10 @@ class ProcurementProvider with ChangeNotifier {
 // ==================== PAYMENTS PROVIDER ====================
 
 class PaymentsProvider with ChangeNotifier {
-  final PaymentsApiService _apiService = PaymentsApiService();
+  final PaymentsApiService _apiService;
+
+  PaymentsProvider({PaymentsApiService? apiService})
+    : _apiService = apiService ?? PaymentsApiService();
 
   // State
   Map<String, dynamic>? _currentPaymentIntent;
@@ -272,7 +316,12 @@ class PaymentsProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      _setError('Error creating payment intent: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to create payment intent right now.',
+        ).userMessage,
+      );
       debugPrint('❌ Payment Intent Error: $e');
       return null;
     } finally {
@@ -295,7 +344,12 @@ class PaymentsProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      _setError('Error getting payment intent: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to load payment intent right now.',
+        ).userMessage,
+      );
       return null;
     } finally {
       _setLoading(false);
@@ -317,7 +371,12 @@ class PaymentsProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Error confirming payment: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to confirm payment right now.',
+        ).userMessage,
+      );
       debugPrint('❌ Confirm Payment Error: $e');
       return false;
     } finally {
@@ -342,7 +401,12 @@ class PaymentsProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Error cancelling payment: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to cancel payment right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -372,7 +436,12 @@ class PaymentsProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      _setError('Error creating refund: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to create refund right now.',
+        ).userMessage,
+      );
       return null;
     } finally {
       _setLoading(false);
@@ -393,7 +462,12 @@ class PaymentsProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      _setError('Error getting refund: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to load refund details right now.',
+        ).userMessage,
+      );
       return null;
     } finally {
       _setLoading(false);

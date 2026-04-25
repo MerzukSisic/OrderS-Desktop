@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 
 /// API Response wrapper
 class ApiResponse<T> {
@@ -143,7 +144,12 @@ class ApiClient {
       return _handleDioError(e);
     } catch (e) {
       debugPrint('❌ Unexpected error: $e');
-      return ApiResponse.failure('Unexpected error: $e');
+      return ApiResponse.failure(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Something went wrong while loading data.',
+        ).userMessage,
+      );
     }
   }
 
@@ -185,7 +191,12 @@ class ApiClient {
       return _handleDioError(e);
     } catch (e) {
       debugPrint('❌ Unexpected error: $e');
-      return ApiResponse.failure('Unexpected error: $e');
+      return ApiResponse.failure(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Something went wrong while sending data.',
+        ).userMessage,
+      );
     }
   }
 
@@ -228,7 +239,12 @@ class ApiClient {
       return _handleDioError(e);
     } catch (e) {
       debugPrint('❌ Unexpected error: $e');
-      return ApiResponse.failure('Unexpected error: $e');
+      return ApiResponse.failure(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Something went wrong while updating data.',
+        ).userMessage,
+      );
     }
   }
 
@@ -256,7 +272,12 @@ class ApiClient {
       return _handleDioError(e);
     } catch (e) {
       debugPrint('❌ Unexpected error: $e');
-      return ApiResponse.failure('Unexpected error: $e');
+      return ApiResponse.failure(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Something went wrong while deleting data.',
+        ).userMessage,
+      );
     }
   }
 
@@ -272,14 +293,14 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        errorMessage =
-            'Connection timeout. Please check your internet connection.';
+        errorMessage = 'Request timed out. Please try again.';
         break;
 
       case DioExceptionType.badResponse:
-        errorMessage =
-            _extractErrorMessage(error.response?.data) ??
-            'Request failed with status ${error.response?.statusCode}';
+        errorMessage = UiErrorMapper.userMessageFromRaw(
+          _extractErrorMessage(error.response?.data),
+          fallback: 'Request failed. Please try again.',
+        );
         break;
 
       case DioExceptionType.cancel:
@@ -287,17 +308,15 @@ class ApiClient {
         break;
 
       case DioExceptionType.connectionError:
-        errorMessage =
-            'Cannot connect to backend. Please check:\n'
-            '1. Is Docker running? (docker ps)\n'
-            '2. Is orders_api container up?\n'
-            '3. Is port 5220 accessible?\n'
-            '4. Firewall blocking the connection?';
+        errorMessage = 'Cannot reach the server right now. Please try again.';
         debugPrint('💡 Backend URL: ${_dio.options.baseUrl}');
         break;
 
       default:
-        errorMessage = 'An unexpected error occurred: ${error.message}';
+        errorMessage = UiErrorMapper.userMessageFromRaw(
+          error.message,
+          fallback: 'An unexpected error occurred. Please try again.',
+        );
         debugPrint('💡 Backend URL: ${_dio.options.baseUrl}');
     }
 

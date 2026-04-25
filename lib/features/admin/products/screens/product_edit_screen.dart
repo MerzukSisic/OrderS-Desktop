@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/core/widgets/accompaniment_group_manager.dart';
 import 'package:rs2_desktop/models/products/accompaniment.dart';
@@ -61,14 +62,17 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await context.read<CategoriesProvider>().fetchCategories();
-      await context.read<InventoryProvider>().fetchStoreProducts();
-      await context.read<ProductsProvider>().fetchProductById(widget.productId);
+      final categoriesProvider = context.read<CategoriesProvider>();
+      final inventoryProvider = context.read<InventoryProvider>();
+      final productsProvider = context.read<ProductsProvider>();
+
+      await categoriesProvider.fetchCategories();
+      await inventoryProvider.fetchStoreProducts();
+      await productsProvider.fetchProductById(widget.productId);
 
       if (!mounted) return;
 
-      final provider = context.read<ProductsProvider>();
-      _product = provider.selectedProduct;
+      _product = productsProvider.selectedProduct;
 
       if (_product != null) {
         _nameController.text = _product!.name;
@@ -93,35 +97,33 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
         }
 
         _accompanimentGroups.clear();
-        if (_product!.accompanimentGroups != null) {
-          for (var group in _product!.accompanimentGroups) {
-            _accompanimentGroups.add(
-              AccompanimentGroup(
-                id: group.id,
-                name: group.name,
-                productId: group.productId,
-                selectionType: group.selectionType,
-                isRequired: group.isRequired,
-                minSelections: group.minSelections,
-                maxSelections: group.maxSelections,
-                displayOrder: group.displayOrder,
-                accompaniments: group.accompaniments
-                    .map(
-                      (acc) => Accompaniment(
-                        id: acc.id,
-                        accompanimentGroupId: acc.accompanimentGroupId,
-                        name: acc.name,
-                        extraCharge: acc.extraCharge,
-                        isAvailable: acc.isAvailable,
-                        displayOrder: acc.displayOrder,
-                        createdAt: acc.createdAt,
-                      ),
-                    )
-                    .toList(),
-                createdAt: group.createdAt,
-              ),
-            );
-          }
+        for (var group in _product!.accompanimentGroups) {
+          _accompanimentGroups.add(
+            AccompanimentGroup(
+              id: group.id,
+              name: group.name,
+              productId: group.productId,
+              selectionType: group.selectionType,
+              isRequired: group.isRequired,
+              minSelections: group.minSelections,
+              maxSelections: group.maxSelections,
+              displayOrder: group.displayOrder,
+              accompaniments: group.accompaniments
+                  .map(
+                    (acc) => Accompaniment(
+                      id: acc.id,
+                      accompanimentGroupId: acc.accompanimentGroupId,
+                      name: acc.name,
+                      extraCharge: acc.extraCharge,
+                      isAvailable: acc.isAvailable,
+                      displayOrder: acc.displayOrder,
+                      createdAt: acc.createdAt,
+                    ),
+                  )
+                  .toList(),
+              createdAt: group.createdAt,
+            ),
+          );
         }
       }
 
@@ -129,7 +131,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showErrorSnackBar('Error loading product: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to load product details right now.',
+          ).userMessage,
+        );
       }
     }
   }
@@ -207,7 +214,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Error: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to update product right now.',
+          ).userMessage,
+        );
       }
     } finally {
       if (mounted) {

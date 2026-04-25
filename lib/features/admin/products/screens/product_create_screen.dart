@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/core/widgets/accompaniment_group_manager.dart';
 import 'package:rs2_desktop/models/products/accompaniment_group.dart';
@@ -127,7 +128,12 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Error: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to create product right now.',
+          ).userMessage,
+        );
       }
     } finally {
       if (mounted) {

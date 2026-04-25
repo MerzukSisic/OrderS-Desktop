@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:rs2_desktop/core/theme/app_theme.dart';
+import 'package:rs2_desktop/features/admin/auth/auth_gate_screen.dart';
 import 'package:rs2_desktop/features/admin/auth/login_screen.dart';
-import 'package:rs2_desktop/providers/auth_provider.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
+import 'package:rs2_desktop/providers/auth_provider.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/products_provider.dart';
 import 'package:rs2_desktop/providers/tables_provider.dart';
@@ -58,30 +59,24 @@ class OrdersDesktopApp extends StatelessWidget {
         // Accompaniments
         ChangeNotifierProvider(create: (_) => AccompanimentsProvider()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
-          return MaterialApp(
-            title: 'OrderS Desktop',
-            debugShowCheckedModeBanner: false,
+      child: MaterialApp(
+        title: 'OrderS Desktop',
+        debugShowCheckedModeBanner: false,
 
-            // Theme Configuration
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.light,
+        // Theme Configuration
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.light,
 
-            // Initial Route based on auth status
-            initialRoute: authProvider.isAuthenticated
-                ? AppRouter.adminDashboard
-                : AppRouter.login,
+        // Auth bootstrap: initialize persisted session before deciding screen.
+        home: const AuthGateScreen(),
 
-            // Route Generator
-            onGenerateRoute: AppRouter.generateRoute,
+        // Route Generator
+        onGenerateRoute: AppRouter.generateRoute,
 
-            // Unknown Route Handler
-            onUnknownRoute: (settings) {
-              return MaterialPageRoute(builder: (_) => const LoginScreen());
-            },
-          );
+        // Unknown Route Handler
+        onUnknownRoute: (settings) {
+          return MaterialPageRoute(builder: (_) => const LoginScreen());
         },
       ),
     );

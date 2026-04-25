@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 import 'package:rs2_desktop/models/products/category_model.dart';
@@ -7,10 +8,7 @@ import 'package:rs2_desktop/models/products/category_model.dart';
 class CategoryEditScreen extends StatefulWidget {
   final String categoryId;
 
-  const CategoryEditScreen({
-    super.key,
-    required this.categoryId,
-  });
+  const CategoryEditScreen({super.key, required this.categoryId});
 
   @override
   State<CategoryEditScreen> createState() => _CategoryEditScreenState();
@@ -60,7 +58,9 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await context.read<CategoriesProvider>().fetchCategoryById(widget.categoryId);
+      await context.read<CategoriesProvider>().fetchCategoryById(
+        widget.categoryId,
+      );
 
       if (!mounted) return;
 
@@ -77,20 +77,31 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showErrorSnackBar('Error loading category: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to load category details right now.',
+          ).userMessage,
+        );
       }
     }
   }
 
   IconData _getCategoryIcon(String name) {
     final lowercaseName = name.toLowerCase();
-    if (lowercaseName.contains('food') || lowercaseName.contains('jelo') || lowercaseName.contains('hrana')) {
+    if (lowercaseName.contains('food') ||
+        lowercaseName.contains('jelo') ||
+        lowercaseName.contains('hrana')) {
       return Icons.restaurant;
-    } else if (lowercaseName.contains('drink') || lowercaseName.contains('piće') || lowercaseName.contains('pice')) {
+    } else if (lowercaseName.contains('drink') ||
+        lowercaseName.contains('piće') ||
+        lowercaseName.contains('pice')) {
       return Icons.local_bar;
-    } else if (lowercaseName.contains('coffee') || lowercaseName.contains('kafa')) {
+    } else if (lowercaseName.contains('coffee') ||
+        lowercaseName.contains('kafa')) {
       return Icons.coffee;
-    } else if (lowercaseName.contains('dessert') || lowercaseName.contains('desert')) {
+    } else if (lowercaseName.contains('dessert') ||
+        lowercaseName.contains('desert')) {
       return Icons.cake;
     }
     return Icons.category;
@@ -103,12 +114,12 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
 
     try {
       await context.read<CategoriesProvider>().updateCategory(
-            widget.categoryId,
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-          );
+        widget.categoryId,
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      );
 
       if (!mounted) return;
 
@@ -116,7 +127,12 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
       Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Error: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to update category right now.',
+          ).userMessage,
+        );
       }
     } finally {
       if (mounted) {
@@ -311,14 +327,18 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
                                 border: Border.all(
                                   color: isSelected
                                       ? AppColors.primary
-                                      : AppColors.textSecondary.withValues(alpha: 0.2),
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.2,
+                                        ),
                                   width: isSelected ? 2 : 1,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 option['icon'],
-                                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
                                 size: 32,
                               ),
                             ),
@@ -361,13 +381,27 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         OutlinedButton(
-                          onPressed: _isSaving ? null : () => Navigator.pop(context),
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            side: BorderSide(
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton.icon(
@@ -382,12 +416,19 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
                                   ),
                                 )
                               : const Icon(Icons.save),
-                          label: Text(_isSaving ? 'Updating...' : 'Update Category'),
+                          label: Text(
+                            _isSaving ? 'Updating...' : 'Update Category',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -431,7 +472,9 @@ class _CategoryEditScreenState extends State<CategoryEditScreen> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             prefixIcon: Icon(icon, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceVariant,

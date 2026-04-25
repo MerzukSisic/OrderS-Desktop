@@ -1,31 +1,26 @@
 // lib/features/admin/procurement/screens/procurement_checkout_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
-import 'package:rs2_desktop/providers/auth_provider.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
 import 'package:intl/intl.dart';
 
 class ProcurementCheckoutScreen extends StatefulWidget {
   final String orderId;
 
-  const ProcurementCheckoutScreen({
-    super.key,
-    required this.orderId,
-  });
+  const ProcurementCheckoutScreen({super.key, required this.orderId});
 
   @override
-  State<ProcurementCheckoutScreen> createState() => _ProcurementCheckoutScreenState();
+  State<ProcurementCheckoutScreen> createState() =>
+      _ProcurementCheckoutScreenState();
 }
 
 class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   int _currentStep = 0;
   bool _isProcessing = false;
-  final _dio = Dio();
 
   @override
   void initState() {
@@ -36,7 +31,9 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   }
 
   Future<void> _loadData() async {
-    await context.read<ProcurementProvider>().fetchProcurementOrderById(widget.orderId);
+    await context.read<ProcurementProvider>().fetchProcurementOrderById(
+      widget.orderId,
+    );
   }
 
   @override
@@ -175,18 +172,19 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   }
 
   Widget _buildError(String error) {
+    final message = UiErrorMapper.userMessageFromRaw(
+      error,
+      fallback: 'Unable to load this order right now.',
+    );
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.error),
           const SizedBox(height: 16),
-          Text(error, style: TextStyle(color: AppColors.error)),
+          Text(message, style: TextStyle(color: AppColors.error)),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
@@ -300,14 +298,18 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: _isProcessing ? null : () => _receiveOrder(order),
+                        onPressed: _isProcessing
+                            ? null
+                            : () => _receiveOrder(order),
                         icon: _isProcessing
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Icon(Icons.inventory_2),
@@ -415,10 +417,16 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow('Payment ID', order.paymentIntentId?.substring(0, 20) ?? 'N/A'),
+          _buildInfoRow(
+            'Payment ID',
+            order.paymentIntentId?.substring(0, 20) ?? 'N/A',
+          ),
           if (order.paidAt != null) ...[
             const SizedBox(height: 8),
-            _buildInfoRow('Paid At', DateFormat('MMM dd, yyyy HH:mm').format(order.paidAt)),
+            _buildInfoRow(
+              'Paid At',
+              DateFormat('MMM dd, yyyy HH:mm').format(order.paidAt),
+            ),
           ],
           const SizedBox(height: 12),
           Container(
@@ -482,21 +490,23 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
               color: isCompleted
                   ? AppColors.success
                   : isActive
-                      ? AppColors.primary
-                      : AppColors.surfaceVariant,
+                  ? AppColors.primary
+                  : AppColors.surfaceVariant,
               shape: BoxShape.circle,
               border: Border.all(
                 color: isCompleted
                     ? AppColors.success
                     : isActive
-                        ? AppColors.primary
-                        : AppColors.border,
+                    ? AppColors.primary
+                    : AppColors.border,
                 width: 2,
               ),
             ),
             child: Icon(
               isCompleted ? Icons.check : icon,
-              color: isCompleted || isActive ? Colors.white : AppColors.textSecondary,
+              color: isCompleted || isActive
+                  ? Colors.white
+                  : AppColors.textSecondary,
               size: 24,
             ),
           ),
@@ -546,18 +556,12 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       children: [
         const Text(
           'Review Your Order',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
           'Please review your order details before proceeding to payment',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 32),
         Row(
@@ -574,9 +578,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
               ),
             ),
             const SizedBox(width: 24),
-            Expanded(
-              child: _buildOrderSummaryCard(order),
-            ),
+            Expanded(child: _buildOrderSummaryCard(order)),
           ],
         ),
       ],
@@ -605,7 +607,10 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
           const SizedBox(height: 12),
           _buildInfoRow('Supplier', order.supplier),
           const SizedBox(height: 12),
-          _buildInfoRow('Order Date', DateFormat('MMM dd, yyyy').format(order.orderDate)),
+          _buildInfoRow(
+            'Order Date',
+            DateFormat('MMM dd, yyyy').format(order.orderDate),
+          ),
           if (order.notes != null && order.notes.isNotEmpty) ...[
             const SizedBox(height: 12),
             _buildInfoRow('Notes', order.notes),
@@ -631,43 +636,47 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          ...order.items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.storeProductName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
+          ...order.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.storeProductName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Quantity: ${item.quantity}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Quantity: ${item.quantity}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                          .format(item.subtotal),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  Text(
+                    NumberFormat.currency(
+                      symbol: 'KM ',
+                      decimalDigits: 2,
+                    ).format(item.subtotal),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -699,9 +708,14 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Text(
-                NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                    .format(order.totalAmount),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                NumberFormat.currency(
+                  symbol: 'KM ',
+                  decimalDigits: 2,
+                ).format(order.totalAmount),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -725,7 +739,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
           style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 32),
-        
+
         // Stripe Info Card
         Container(
           padding: const EdgeInsets.all(20),
@@ -784,20 +798,26 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                   const SizedBox(height: 12),
                   _buildTestCardRow('✅ Success', '4242 4242 4242 4242'),
                   _buildTestCardRow('❌ Decline', '4000 0000 0000 0002'),
-                  _buildTestCardRow('⚠️ Insufficient Funds', '4000 0000 0000 9995'),
+                  _buildTestCardRow(
+                    '⚠️ Insufficient Funds',
+                    '4000 0000 0000 9995',
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Use any future date (e.g., 12/34) and any 3-digit CVV',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         // Order Summary
         Container(
           padding: const EdgeInsets.all(20),
@@ -824,9 +844,14 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                        .format(order.totalAmount),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    NumberFormat.currency(
+                      symbol: 'KM ',
+                      decimalDigits: 2,
+                    ).format(order.totalAmount),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -844,10 +869,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         children: [
           SizedBox(
             width: 160,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 12),
-            ),
+            child: Text(label, style: const TextStyle(fontSize: 12)),
           ),
           Text(
             cardNumber,
@@ -886,19 +908,13 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
             const SizedBox(height: 32),
             const Text(
               'Payment Successful!',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text(
               'Your procurement order has been paid successfully',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 48),
             Container(
@@ -910,12 +926,20 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
               ),
               child: Column(
                 children: [
-                  _buildConfirmationRow('Order ID', order.id.substring(0, 8).toUpperCase()),
+                  _buildConfirmationRow(
+                    'Order ID',
+                    order.id.substring(0, 8).toUpperCase(),
+                  ),
                   const SizedBox(height: 12),
                   _buildConfirmationRow('Supplier', order.supplier),
                   const SizedBox(height: 12),
-                  _buildConfirmationRow('Amount Paid', 
-                    NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(order.totalAmount)),
+                  _buildConfirmationRow(
+                    'Amount Paid',
+                    NumberFormat.currency(
+                      symbol: 'KM ',
+                      decimalDigits: 2,
+                    ).format(order.totalAmount),
+                  ),
                   const SizedBox(height: 12),
                   _buildConfirmationRow('Status', 'Paid'),
                 ],
@@ -968,17 +992,11 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -999,10 +1017,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         Flexible(
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             textAlign: TextAlign.right,
           ),
         ),
@@ -1016,17 +1031,11 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
         Text(
           NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(amount),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -1054,7 +1063,10 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
               icon: const Icon(Icons.arrow_back),
               label: const Text('Back'),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
               ),
             )
           else
@@ -1071,12 +1083,17 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : Icon(_currentStep == 1 ? Icons.payment : Icons.arrow_forward),
+                  : Icon(
+                      _currentStep == 1 ? Icons.payment : Icons.arrow_forward,
+                    ),
               label: Text(_currentStep == 1 ? 'Pay with Stripe' : 'Continue'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
             ),
         ],
@@ -1087,13 +1104,13 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
   // ============ RECEIVE ORDER ============
   Future<void> _receiveOrder(dynamic order) async {
     setState(() => _isProcessing = true);
+    final provider = context.read<ProcurementProvider>();
 
-    final items = (order.items as List).map((item) => {
-      'itemId': item.id,
-      'receivedQuantity': item.quantity,
-    }).toList();
+    final items = (order.items as List)
+        .map((item) => {'itemId': item.id, 'receivedQuantity': item.quantity})
+        .toList();
 
-    final success = await context.read<ProcurementProvider>().receiveProcurement(
+    final success = await provider.receiveProcurement(
       procurementOrderId: order.id,
       items: items,
     );
@@ -1111,7 +1128,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.read<ProcurementProvider>().error ?? 'Failed to receive order'),
+          content: Text(provider.error ?? 'Failed to receive order'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1130,73 +1147,68 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
       });
 
       try {
-        final authProvider = context.read<AuthProvider>();
-        final token = authProvider.token;
-        
-        if (token == null || token.isEmpty) {
-          throw Exception('Authentication token not found. Please login again.');
-        }
-        
-        debugPrint('🔑 Using token: ${token.substring(0, 20)}...');
-        
-        final response = await _dio.post(
-          'http://127.0.0.1:5220/api/procurement/${order.id}/create-checkout-session',
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-            },
-          ),
-        );
+        final provider = context.read<ProcurementProvider>();
+        final result = await provider.initiatePayment(order.id);
 
-        final checkoutUrl = response.data['checkoutUrl'] as String;
+        if (!mounted) return;
+
+        if (!result.success || result.checkoutUrl == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.userMessage.isEmpty
+                    ? 'Failed to open Stripe Checkout'
+                    : result.userMessage,
+              ),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          setState(() {
+            _isProcessing = false;
+          });
+          return;
+        }
+
+        final checkoutUrl = result.checkoutUrl!;
         debugPrint('🔗 Stripe Checkout URL: $checkoutUrl');
 
         final uri = Uri.parse(checkoutUrl);
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
-          
+
           if (!mounted) return;
           _showPollingDialog(order.id);
         } else {
-          throw Exception('Could not launch Stripe Checkout');
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Could not open Stripe Checkout in browser.'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          setState(() {
+            _isProcessing = false;
+          });
         }
-      } on DioException catch (e) {
-        debugPrint('❌ DioException: ${e.message}');
-        debugPrint('❌ Response: ${e.response?.data}');
-        
-        if (!mounted) return;
-        
-        String errorMessage = 'Failed to open Stripe Checkout';
-        if (e.response?.statusCode == 401) {
-          errorMessage = 'Session expired. Please login again.';
-        } else if (e.response?.data != null) {
-          errorMessage = e.response!.data['error']?.toString() ?? errorMessage;
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-        
-        setState(() {
-          _isProcessing = false;
-        });
       } catch (e) {
         debugPrint('❌ Checkout Error: $e');
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to open Stripe Checkout: $e'),
+            content: Text(
+              UiErrorMapper.fromException(
+                e,
+                fallback: 'Failed to open Stripe Checkout.',
+              ).userMessage,
+            ),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 5),
           ),
         );
-        
+
         setState(() {
           _isProcessing = false;
         });
@@ -1236,50 +1248,53 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
 
   Future<void> _pollPaymentStatus(String orderId) async {
     const maxAttempts = 60;
-    
+    final provider = context.read<ProcurementProvider>();
+
     for (int i = 0; i < maxAttempts; i++) {
       await Future.delayed(const Duration(seconds: 3));
-      
+
       try {
-        await context.read<ProcurementProvider>().fetchProcurementOrderById(orderId);
-        final order = context.read<ProcurementProvider>().selectedOrder;
-        
+        await provider.fetchProcurementOrderById(orderId);
+        final order = provider.selectedOrder;
+
         if (order?.status == 'Paid') {
           debugPrint('✅ Payment confirmed! Order status: ${order?.status}');
-          
+
           if (!mounted) return;
           Navigator.of(context).pop();
-          
+
           setState(() {
             _currentStep = 2;
             _isProcessing = false;
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('✅ Payment successful!'),
               backgroundColor: AppColors.success,
             ),
           );
-          
+
           return;
         }
       } catch (e) {
         debugPrint('Polling error: $e');
       }
     }
-    
+
     if (!mounted) return;
     Navigator.of(context).pop();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Payment verification timeout. Please check order status manually.'),
+        content: const Text(
+          'Payment verification timeout. Please check order status manually.',
+        ),
         backgroundColor: AppColors.warning,
         duration: const Duration(seconds: 5),
       ),
     );
-    
+
     setState(() {
       _isProcessing = false;
     });

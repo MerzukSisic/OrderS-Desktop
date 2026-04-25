@@ -50,7 +50,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
 
     if (mounted) {
       _user = provider.selectedUser;
-      
+
       if (_user != null) {
         _fullNameController.text = _user!.fullName;
         _emailController.text = _user!.email;
@@ -67,74 +67,81 @@ class _UserEditScreenState extends State<UserEditScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
+    final usersProvider = context.read<UsersProvider>();
+    final messenger = ScaffoldMessenger.of(context);
 
-    final success = await context.read<UsersProvider>().updateUser(
+    final success = await usersProvider.updateUser(
       widget.userId,
       fullName: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
-      phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+      phoneNumber: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
       role: _selectedRole,
       isActive: _isActive,
     );
 
-    if (mounted) {
-      setState(() => _isSubmitting = false);
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('User updated successfully'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        Navigator.pop(context);
-      } else {
-        final error = context.read<UsersProvider>().error;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Failed to update user'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('User updated successfully'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      final error = usersProvider.error;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Failed to update user'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   void _showDeleteDialog() {
+    final rootContext = context;
+    final usersProvider = rootContext.read<UsersProvider>();
+    final messenger = ScaffoldMessenger.of(rootContext);
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: rootContext,
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('Delete User'),
-        content: Text('Are you sure you want to delete ${_user?.fullName}? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete ${_user?.fullName}? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              
-              final success = await context.read<UsersProvider>().deleteUser(widget.userId);
-              
-              if (mounted) {
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('User deleted successfully'),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Failed to delete user'),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                }
+              Navigator.pop(dialogContext);
+
+              final success = await usersProvider.deleteUser(widget.userId);
+              if (!rootContext.mounted) return;
+
+              if (success) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text('User deleted successfully'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+                Navigator.pop(rootContext);
+              } else {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text('Failed to delete user'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
               }
             },
             child: Text('Delete', style: TextStyle(color: AppColors.error)),

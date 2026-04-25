@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
+import 'package:rs2_desktop/models/inventory/store_product_model.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 
@@ -10,17 +12,18 @@ class CreateProcurementDialog extends StatefulWidget {
   const CreateProcurementDialog({super.key});
 
   @override
-  State<CreateProcurementDialog> createState() => _CreateProcurementDialogState();
+  State<CreateProcurementDialog> createState() =>
+      _CreateProcurementDialogState();
 }
 
 class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
   final _formKey = GlobalKey<FormState>();
   final _supplierController = TextEditingController();
   final _notesController = TextEditingController();
-  
+
   String? _selectedStoreId;
   String? _selectedSourceStoreId;
-  List<Map<String, dynamic>> _items = [];
+  final List<Map<String, dynamic>> _items = [];
   bool _isLoading = false;
 
   @override
@@ -43,9 +46,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: 800,
         height: 700,
@@ -55,11 +56,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
           children: [
             _buildHeader(),
             const SizedBox(height: 24),
-            Expanded(
-              child: SingleChildScrollView(
-                child: _buildForm(),
-              ),
-            ),
+            Expanded(child: SingleChildScrollView(child: _buildForm())),
             const SizedBox(height: 24),
             _buildActions(),
           ],
@@ -77,7 +74,11 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
             color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.add_shopping_cart, color: AppColors.primary, size: 24),
+          child: Icon(
+            Icons.add_shopping_cart,
+            color: AppColors.primary,
+            size: 24,
+          ),
         ),
         const SizedBox(width: 12),
         const Expanded(
@@ -86,18 +87,12 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
             children: [
               Text(
                 'Create Procurement Order',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
               Text(
                 'Order supplies from your suppliers',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -123,7 +118,9 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
                 return const CircularProgressIndicator();
               }
 
-              final internalStores = provider.stores.where((s) => !s.isExternal).toList();
+              final internalStores = provider.stores
+                  .where((s) => !s.isExternal)
+                  .toList();
 
               return Column(
                 children: [
@@ -161,7 +158,8 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
                   DropdownButtonFormField<String?>(
                     value: _selectedSourceStoreId,
                     decoration: InputDecoration(
-                      labelText: 'Source Store (optional — leave empty for external supplier)',
+                      labelText:
+                          'Source Store (optional — leave empty for external supplier)',
                       filled: true,
                       fillColor: AppColors.surfaceVariant,
                       border: OutlineInputBorder(
@@ -175,7 +173,9 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
                         value: null,
                         child: Text('— None (enter supplier name below) —'),
                       ),
-                      ...provider.stores.where((s) => s.isExternal).map((store) {
+                      ...provider.stores.where((s) => s.isExternal).map((
+                        store,
+                      ) {
                         return DropdownMenuItem<String?>(
                           value: store.id,
                           child: Text(store.name),
@@ -233,10 +233,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
             children: [
               const Text(
                 'Order Items',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               ElevatedButton.icon(
                 onPressed: _addItem,
@@ -261,7 +258,11 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.shopping_cart, size: 48, color: AppColors.textSecondary),
+                    Icon(
+                      Icons.shopping_cart,
+                      size: 48,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'No items added yet',
@@ -355,10 +356,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
               children: [
                 const Text(
                   'Total Amount:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   'KM ${totalAmount.toStringAsFixed(2)}',
@@ -378,7 +376,10 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
             OutlinedButton(
               onPressed: _isLoading ? null : () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Cancel'),
             ),
@@ -388,7 +389,10 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -410,7 +414,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
   void _addItem() {
     showDialog(
       context: context,
-      builder: (context) => _AddItemDialog(
+      builder: (context) => AddProcurementItemDialog(
         destinationStoreId: _selectedSourceStoreId,
         onAdd: (item) {
           setState(() {
@@ -438,7 +442,9 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
     });
 
     try {
-      final success = await context.read<ProcurementProvider>().createProcurementOrder(
+      final success = await context
+          .read<ProcurementProvider>()
+          .createProcurementOrder(
             storeId: _selectedStoreId!,
             sourceStoreId: _selectedSourceStoreId,
             supplier: _supplierController.text,
@@ -460,7 +466,8 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.read<ProcurementProvider>().error ?? 'Failed to create order',
+              context.read<ProcurementProvider>().error ??
+                  'Failed to create order',
             ),
             backgroundColor: AppColors.error,
           ),
@@ -470,7 +477,12 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          content: Text(
+            UiErrorMapper.fromException(
+              e,
+              fallback: 'Unable to create order right now.',
+            ).userMessage,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -485,17 +497,24 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
 }
 
 // Add Item Dialog
-class _AddItemDialog extends StatefulWidget {
+class AddProcurementItemDialog extends StatefulWidget {
   final Function(Map<String, dynamic>) onAdd;
   final String? destinationStoreId;
+  final List<StoreProductModel>? availableProducts;
 
-  const _AddItemDialog({required this.onAdd, this.destinationStoreId});
+  const AddProcurementItemDialog({
+    super.key,
+    required this.onAdd,
+    this.destinationStoreId,
+    this.availableProducts,
+  });
 
   @override
-  State<_AddItemDialog> createState() => _AddItemDialogState();
+  State<AddProcurementItemDialog> createState() =>
+      _AddProcurementItemDialogState();
 }
 
-class _AddItemDialogState extends State<_AddItemDialog> {
+class _AddProcurementItemDialogState extends State<AddProcurementItemDialog> {
   final _quantityController = TextEditingController();
   final _unitCostController = TextEditingController();
   String? _selectedProductId;
@@ -507,6 +526,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   void initState() {
     super.initState();
     _quantityController.addListener(() => setState(() {}));
+    _unitCostController.addListener(() => setState(() {}));
   }
 
   @override
@@ -517,10 +537,24 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   }
 
   bool get _stockInsufficient {
-    if (_availableStock == null || _quantityController.text.isEmpty) return false;
+    if (_availableStock == null || _quantityController.text.isEmpty) {
+      return false;
+    }
     final qty = int.tryParse(_quantityController.text);
     if (qty == null) return false;
     return qty > _availableStock!;
+  }
+
+  double? get _parsedUnitCost {
+    final normalized = _unitCostController.text.trim().replaceAll(',', '.');
+    if (normalized.isEmpty) return null;
+    return double.tryParse(normalized);
+  }
+
+  bool get _isUnitCostInvalid {
+    if (_unitCostController.text.trim().isEmpty) return false;
+    final parsed = _parsedUnitCost;
+    return parsed == null || parsed <= 0;
   }
 
   @override
@@ -536,19 +570,20 @@ class _AddItemDialogState extends State<_AddItemDialog> {
           children: [
             const Text(
               'Add Item',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             Consumer<InventoryProvider>(
               builder: (context, provider, child) {
+                final baseProducts =
+                    widget.availableProducts ?? provider.storeProducts;
                 final products = widget.destinationStoreId != null
-                    ? provider.storeProducts.where((p) => p.storeId == widget.destinationStoreId).toList()
-                    : provider.storeProducts;
+                    ? baseProducts
+                          .where((p) => p.storeId == widget.destinationStoreId)
+                          .toList()
+                    : baseProducts;
 
-                if (provider.isLoading) {
+                if (widget.availableProducts == null && provider.isLoading) {
                   return const CircularProgressIndicator();
                 }
 
@@ -569,6 +604,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 }
 
                 return DropdownButtonFormField<String>(
+                  key: const Key('add_item_product'),
                   value: _selectedProductId,
                   decoration: InputDecoration(
                     labelText: 'Product',
@@ -599,6 +635,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('add_item_quantity'),
               controller: _quantityController,
               decoration: InputDecoration(
                 labelText: 'Quantity',
@@ -620,6 +657,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('add_item_unit_cost'),
               controller: _unitCostController,
               decoration: InputDecoration(
                 labelText: 'Unit Cost (KM)',
@@ -628,8 +666,21 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+                errorText: _isUnitCostInvalid
+                    ? 'Enter a valid amount greater than 0'
+                    : null,
               ),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  final text = newValue.text;
+                  if (text.isEmpty) return newValue;
+                  final decimalPattern = RegExp(r'^\d{0,9}([.,]\d{0,2})?$');
+                  return decimalPattern.hasMatch(text) ? newValue : oldValue;
+                }),
+              ],
             ),
             const SizedBox(height: 24),
             Row(
@@ -641,17 +692,27 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: _selectedProductId == null ||
+                  key: const Key('add_item_submit'),
+                  onPressed:
+                      _selectedProductId == null ||
                           _quantityController.text.isEmpty ||
                           _unitCostController.text.isEmpty ||
+                          _isUnitCostInvalid ||
                           _stockInsufficient
                       ? null
                       : () {
+                          final quantity = int.tryParse(
+                            _quantityController.text,
+                          );
+                          final unitCost = _parsedUnitCost;
+                          if (quantity == null || unitCost == null) {
+                            return;
+                          }
                           widget.onAdd({
                             'storeProductId': _selectedProductId!,
                             'productName': _selectedProductName!,
-                            'quantity': int.parse(_quantityController.text),
-                            'unitCost': double.parse(_unitCostController.text),
+                            'quantity': quantity,
+                            'unitCost': unitCost,
                           });
                           Navigator.pop(context);
                         },

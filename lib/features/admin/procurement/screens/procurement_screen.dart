@@ -1,6 +1,7 @@
 // lib/features/admin/procurement/screens/procurement_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/create_procurement_dialog.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/procurement_card.dart';
@@ -42,11 +43,13 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
   Widget build(BuildContext context) {
     return Consumer2<ProcurementProvider, StoresProvider>(
       builder: (context, procurementProvider, storesProvider, child) {
-        if (procurementProvider.isLoading && procurementProvider.procurementOrders.isEmpty) {
+        if (procurementProvider.isLoading &&
+            procurementProvider.procurementOrders.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (procurementProvider.error != null && procurementProvider.procurementOrders.isEmpty) {
+        if (procurementProvider.error != null &&
+            procurementProvider.procurementOrders.isEmpty) {
           return _buildError(procurementProvider.error!);
         }
 
@@ -56,24 +59,28 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
   }
 
   Widget _buildError(String error) {
+    final message = UiErrorMapper.userMessageFromRaw(
+      error,
+      fallback: 'Unable to load procurement orders right now.',
+    );
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.error),
           const SizedBox(height: 16),
-          Text(error, style: TextStyle(color: AppColors.error)),
+          Text(message, style: TextStyle(color: AppColors.error)),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
   }
 
-  Widget _buildContent(ProcurementProvider provider, StoresProvider storesProvider) {
+  Widget _buildContent(
+    ProcurementProvider provider,
+    StoresProvider storesProvider,
+  ) {
     final filteredOrders = _getFilteredOrders(provider.procurementOrders);
 
     return Column(
@@ -91,7 +98,10 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
     );
   }
 
-  Widget _buildHeader(ProcurementProvider provider, StoresProvider storesProvider) {
+  Widget _buildHeader(
+    ProcurementProvider provider,
+    StoresProvider storesProvider,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -109,10 +119,7 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
                 children: [
                   const Text(
                     'Procurement Orders',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -136,7 +143,10 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -226,7 +236,10 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
         Expanded(
           child: _buildStatCard(
             'Total Value',
-            NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(totalAmount),
+            NumberFormat.currency(
+              symbol: 'KM ',
+              decimalDigits: 2,
+            ).format(totalAmount),
             Icons.attach_money,
             Colors.green,
           ),
@@ -235,7 +248,12 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -293,7 +311,11 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
           const SizedBox(width: 8),
           _buildFilterChip('Paid', 'paid', provider.paidOrders.length),
           const SizedBox(width: 8),
-          _buildFilterChip('Received', 'received', provider.receivedOrders.length),
+          _buildFilterChip(
+            'Received',
+            'received',
+            provider.receivedOrders.length,
+          ),
         ],
       ),
     );
@@ -313,7 +335,9 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
       backgroundColor: AppColors.surface,
       selectedColor: AppColors.primary.withOpacity(0.2),
       checkmarkColor: AppColors.primary,
-      side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.border,
+      ),
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primary : AppColors.textPrimary,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -343,18 +367,12 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
           const SizedBox(height: 16),
           Text(
             'No procurement orders',
-            style: TextStyle(
-              fontSize: 18,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 18, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'Create your first procurement order',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(

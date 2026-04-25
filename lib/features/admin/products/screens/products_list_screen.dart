@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/models/products/product_model.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
@@ -261,9 +262,7 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search products...',
                         hintStyle: TextStyle(
-                          color: AppColors.textSecondary.withValues(
-                            alpha: 0.5,
-                          ),
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
                         ),
                         prefixIcon: const Icon(
                           Icons.search,
@@ -386,6 +385,10 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
               }
 
               if (provider.error != null) {
+                final safeError = UiErrorMapper.userMessageFromRaw(
+                  provider.error,
+                  fallback: 'Unable to load products right now.',
+                );
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -397,7 +400,7 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        provider.error!,
+                        safeError,
                         style: const TextStyle(
                           color: AppColors.error,
                           fontSize: 16,
@@ -414,9 +417,7 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                 );
               }
 
-              final filteredProducts = _getFilteredProducts(
-                provider.products,
-              );
+              final filteredProducts = _getFilteredProducts(provider.products);
 
               if (filteredProducts.isEmpty) {
                 return Center(
@@ -450,337 +451,338 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
     );
   }
 
- Widget _buildDataTable(List<ProductModel> products) {
-  final startIndex = _currentPage * _rowsPerPage;
-  final endIndex = (startIndex + _rowsPerPage).clamp(0, products.length);
-  final pageProducts = products.sublist(startIndex, endIndex);
+  Widget _buildDataTable(List<ProductModel> products) {
+    final startIndex = _currentPage * _rowsPerPage;
+    final endIndex = (startIndex + _rowsPerPage).clamp(0, products.length);
+    final pageProducts = products.sublist(startIndex, endIndex);
 
-  return SingleChildScrollView( // ✅ DODAJ OVO
-    padding: const EdgeInsets.all(24),
-    child: Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          width: 1,
+    return SingleChildScrollView(
+      // ✅ DODAJ OVO
+      padding: const EdgeInsets.all(24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // ✅ DODAJ OVO
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: DataTable(
-              sortColumnIndex: _sortColumnIndex,
-              sortAscending: _sortAscending,
-              headingRowColor: WidgetStateProperty.all(
-                AppColors.surfaceVariant,
-              ),
-              dataRowColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                if (states.contains(WidgetState.hovered)) {
-                  return AppColors.surfaceVariant.withValues(alpha: 0.5);
-                }
-                return null;
-              }),
-              columnSpacing: 24,
-              horizontalMargin: 24,
-              columns: [
-                DataColumn(
-                  label: const Text(
-                    'Product Name',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // ✅ DODAJ OVO
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: DataTable(
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                headingRowColor: WidgetStateProperty.all(
+                  AppColors.surfaceVariant,
+                ),
+                dataRowColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return AppColors.surfaceVariant.withValues(alpha: 0.5);
+                  }
+                  return null;
+                }),
+                columnSpacing: 24,
+                horizontalMargin: 24,
+                columns: [
+                  DataColumn(
+                    label: const Text(
+                      'Product Name',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    onSort: (columnIndex, ascending) {
+                      setState(() {
+                        _sortColumnIndex = columnIndex;
+                        _sortAscending = ascending;
+                      });
+                    },
+                  ),
+                  DataColumn(
+                    label: const Text(
+                      'Category',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    onSort: (columnIndex, ascending) {
+                      setState(() {
+                        _sortColumnIndex = columnIndex;
+                        _sortAscending = ascending;
+                      });
+                    },
+                  ),
+                  DataColumn(
+                    label: const Text(
+                      'Price',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    numeric: true,
+                    onSort: (columnIndex, ascending) {
+                      setState(() {
+                        _sortColumnIndex = columnIndex;
+                        _sortAscending = ascending;
+                      });
+                    },
+                  ),
+                  DataColumn(
+                    label: const Text(
+                      'Stock',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    numeric: true,
+                    onSort: (columnIndex, ascending) {
+                      setState(() {
+                        _sortColumnIndex = columnIndex;
+                        _sortAscending = ascending;
+                      });
+                    },
+                  ),
+                  const DataColumn(
+                    label: Text(
+                      'Status',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                  onSort: (columnIndex, ascending) {
-                    setState(() {
-                      _sortColumnIndex = columnIndex;
-                      _sortAscending = ascending;
-                    });
-                  },
-                ),
-                DataColumn(
-                  label: const Text(
-                    'Category',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                  const DataColumn(
+                    label: Text(
+                      'Actions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                  onSort: (columnIndex, ascending) {
-                    setState(() {
-                      _sortColumnIndex = columnIndex;
-                      _sortAscending = ascending;
-                    });
-                  },
-                ),
-                DataColumn(
-                  label: const Text(
-                    'Price',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  numeric: true,
-                  onSort: (columnIndex, ascending) {
-                    setState(() {
-                      _sortColumnIndex = columnIndex;
-                      _sortAscending = ascending;
-                    });
-                  },
-                ),
-                DataColumn(
-                  label: const Text(
-                    'Stock',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  numeric: true,
-                  onSort: (columnIndex, ascending) {
-                    setState(() {
-                      _sortColumnIndex = columnIndex;
-                      _sortAscending = ascending;
-                    });
-                  },
-                ),
-                const DataColumn(
-                  label: Text(
-                    'Status',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const DataColumn(
-                  label: Text(
-                    'Actions',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-              rows: pageProducts.map((product) {
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(
-                                alpha: 0.15,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: product.imageUrl != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      product.imageUrl!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const Icon(
-                                            Icons.image_outlined,
-                                            color: AppColors.primary,
-                                          ),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.image_outlined,
-                                    color: AppColors.primary,
-                                  ),
-                          ),
-                          const SizedBox(width: 12),
-                          Flexible(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  product.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                ],
+                rows: pageProducts.map((product) {
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.15,
                                 ),
-                                if (product.description != null)
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: product.imageUrl != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        product.imageUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(
+                                              Icons.image_outlined,
+                                              color: AppColors.primary,
+                                            ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.image_outlined,
+                                      color: AppColors.primary,
+                                    ),
+                            ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
                                   Text(
-                                    product.description!,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary
-                                          .withValues(alpha: 0.7),
+                                    product.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: AppColors.textPrimary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                              ],
+                                  if (product.description != null)
+                                    Text(
+                                      product.description!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      DataCell(
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              width: 1,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            width: 1,
+                          child: Text(
+                            product.categoryName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          product.categoryName,
+                      ),
+                      DataCell(
+                        Text(
+                          '${product.price.toStringAsFixed(2)} KM',
                           style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.primary,
                             fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
+                      DataCell(
+                        Text(
+                          '${product.stock}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: (product.stock) < 10
+                                ? AppColors.error
+                                : AppColors.success,
+                          ),
+                        ),
+                      ),
+                      DataCell(_buildStatusChip(product)),
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRouter.adminProductEdit,
+                                  arguments: product.id,
+                                );
+                              },
+                              tooltip: 'Edit',
+                              color: AppColors.primary,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              onPressed: () => _deleteProduct(product),
+                              tooltip: 'Delete',
+                              color: AppColors.error,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+
+            // Pagination
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Showing ${startIndex + 1}-$endIndex of ${products.length}',
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.7),
+                      fontSize: 14,
                     ),
-                    DataCell(
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: AppColors.textSecondary,
+                        ),
+                        onPressed: _currentPage > 0
+                            ? () {
+                                setState(() {
+                                  _currentPage--;
+                                });
+                              }
+                            : null,
+                      ),
                       Text(
-                        '${product.price.toStringAsFixed(2)} KM',
+                        'Page ${_currentPage + 1} of ${(products.length / _rowsPerPage).ceil()}',
                         style: const TextStyle(
-                          fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                    ),
-                    DataCell(
-                      Text(
-                        '${product.stock}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: (product.stock) < 10
-                              ? AppColors.error
-                              : AppColors.success,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: AppColors.textSecondary,
                         ),
+                        onPressed: endIndex < products.length
+                            ? () {
+                                setState(() {
+                                  _currentPage++;
+                                });
+                              }
+                            : null,
                       ),
-                    ),
-                    DataCell(_buildStatusChip(product)),
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 20),
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRouter.adminProductEdit,
-                                arguments: product.id,
-                              );
-                            },
-                            tooltip: 'Edit',
-                            color: AppColors.primary,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 20),
-                            onPressed: () => _deleteProduct(product),
-                            tooltip: 'Delete',
-                            color: AppColors.error,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-
-          // Pagination
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              border: Border(
-                top: BorderSide(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Showing ${startIndex + 1}-$endIndex of ${products.length}',
-                  style: TextStyle(
-                    color: AppColors.textSecondary.withValues(alpha: 0.7),
-                    fontSize: 14,
+                    ],
                   ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.chevron_left,
-                        color: AppColors.textSecondary,
-                      ),
-                      onPressed: _currentPage > 0
-                          ? () {
-                              setState(() {
-                                _currentPage--;
-                              });
-                            }
-                          : null,
-                    ),
-                    Text(
-                      'Page ${_currentPage + 1} of ${(products.length / _rowsPerPage).ceil()}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        color: AppColors.textSecondary,
-                      ),
-                      onPressed: endIndex < products.length
-                          ? () {
-                              setState(() {
-                                _currentPage++;
-                              });
-                            }
-                          : null,
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildStatusChip(ProductModel product) {
     final stock = product.stock;

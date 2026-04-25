@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;  
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // ✅ PROMIJENJENO
 import 'package:rs2_desktop/core/constants/api_constants.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/models/products/accompaniment.dart';
 import 'package:rs2_desktop/models/products/accompaniment_group.dart';
 
@@ -53,7 +54,7 @@ class ApiService {
   /// Get stored access token
   Future<String?> getToken() async {
     if (_accessToken != null) return _accessToken;
-    
+
     final prefs = await SharedPreferences.getInstance();
     _accessToken = prefs.getString(AppConstants.keyAccessToken);
     return _accessToken;
@@ -92,9 +93,13 @@ class ApiService {
   // ============================================
 
   /// GET Request
-  Future<dynamic> get(String endpoint, {Map<String, String>? queryParams}) async {
-    final uri = Uri.parse(ApiConstants.baseUrl + endpoint)
-        .replace(queryParameters: queryParams);
+  Future<dynamic> get(
+    String endpoint, {
+    Map<String, String>? queryParams,
+  }) async {
+    final uri = Uri.parse(
+      ApiConstants.baseUrl + endpoint,
+    ).replace(queryParameters: queryParams);
 
     try {
       _log('➡️ GET  $uri');
@@ -103,18 +108,36 @@ class ApiService {
           .get(uri, headers: await _getHeaders())
           .timeout(ApiConstants.timeout);
 
-      _log('⬅️ GET  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}');
+      _log(
+        '⬅️ GET  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+      );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
-      throw ApiException('Connection error: ${e.message}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          e.message,
+          fallback: 'Cannot reach the server right now. Please try again.',
+        ),
+      );
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage.contains('TimeoutException') || errorMessage.contains('timeout')) {
-        throw ApiException('Request timeout. URL: $uri');
+      if (errorMessage.contains('TimeoutException') ||
+          errorMessage.contains('timeout')) {
+        throw ApiException('Request timed out. Please try again.');
       }
-      throw ApiException('Network error: $errorMessage. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          errorMessage,
+          fallback: 'A network error occurred. Please try again.',
+        ),
+      );
     } catch (e) {
-      throw ApiException('Unexpected error: ${e.toString()}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'An unexpected error occurred. Please try again.',
+        ).userMessage,
+      );
     }
   }
 
@@ -130,18 +153,36 @@ class ApiService {
           .post(uri, headers: await _getHeaders(), body: json.encode(body))
           .timeout(ApiConstants.timeout);
 
-      _log('⬅️ POST $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}');
+      _log(
+        '⬅️ POST $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+      );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
-      throw ApiException('Connection error: ${e.message}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          e.message,
+          fallback: 'Cannot reach the server right now. Please try again.',
+        ),
+      );
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage.contains('TimeoutException') || errorMessage.contains('timeout')) {
-        throw ApiException('Request timeout. URL: $uri');
+      if (errorMessage.contains('TimeoutException') ||
+          errorMessage.contains('timeout')) {
+        throw ApiException('Request timed out. Please try again.');
       }
-      throw ApiException('Network error: $errorMessage. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          errorMessage,
+          fallback: 'A network error occurred. Please try again.',
+        ),
+      );
     } catch (e) {
-      throw ApiException('Unexpected error: ${e.toString()}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'An unexpected error occurred. Please try again.',
+        ).userMessage,
+      );
     }
   }
 
@@ -157,18 +198,36 @@ class ApiService {
           .put(uri, headers: await _getHeaders(), body: json.encode(body))
           .timeout(ApiConstants.timeout);
 
-      _log('⬅️ PUT  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}');
+      _log(
+        '⬅️ PUT  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+      );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
-      throw ApiException('Connection error: ${e.message}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          e.message,
+          fallback: 'Cannot reach the server right now. Please try again.',
+        ),
+      );
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage.contains('TimeoutException') || errorMessage.contains('timeout')) {
-        throw ApiException('Request timeout. URL: $uri');
+      if (errorMessage.contains('TimeoutException') ||
+          errorMessage.contains('timeout')) {
+        throw ApiException('Request timed out. Please try again.');
       }
-      throw ApiException('Network error: $errorMessage. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          errorMessage,
+          fallback: 'A network error occurred. Please try again.',
+        ),
+      );
     } catch (e) {
-      throw ApiException('Unexpected error: ${e.toString()}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'An unexpected error occurred. Please try again.',
+        ).userMessage,
+      );
     }
   }
 
@@ -184,18 +243,36 @@ class ApiService {
           .patch(uri, headers: await _getHeaders(), body: json.encode(body))
           .timeout(ApiConstants.timeout);
 
-      _log('⬅️ PATCH $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}');
+      _log(
+        '⬅️ PATCH $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+      );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
-      throw ApiException('Connection error: ${e.message}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          e.message,
+          fallback: 'Cannot reach the server right now. Please try again.',
+        ),
+      );
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage.contains('TimeoutException') || errorMessage.contains('timeout')) {
-        throw ApiException('Request timeout. URL: $uri');
+      if (errorMessage.contains('TimeoutException') ||
+          errorMessage.contains('timeout')) {
+        throw ApiException('Request timed out. Please try again.');
       }
-      throw ApiException('Network error: $errorMessage. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          errorMessage,
+          fallback: 'A network error occurred. Please try again.',
+        ),
+      );
     } catch (e) {
-      throw ApiException('Unexpected error: ${e.toString()}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'An unexpected error occurred. Please try again.',
+        ).userMessage,
+      );
     }
   }
 
@@ -210,18 +287,36 @@ class ApiService {
           .delete(uri, headers: await _getHeaders())
           .timeout(ApiConstants.timeout);
 
-      _log('⬅️ DELETE $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}');
+      _log(
+        '⬅️ DELETE $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+      );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
-      throw ApiException('Connection error: ${e.message}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          e.message,
+          fallback: 'Cannot reach the server right now. Please try again.',
+        ),
+      );
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      if (errorMessage.contains('TimeoutException') || errorMessage.contains('timeout')) {
-        throw ApiException('Request timeout. URL: $uri');
+      if (errorMessage.contains('TimeoutException') ||
+          errorMessage.contains('timeout')) {
+        throw ApiException('Request timed out. Please try again.');
       }
-      throw ApiException('Network error: $errorMessage. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.userMessageFromRaw(
+          errorMessage,
+          fallback: 'A network error occurred. Please try again.',
+        ),
+      );
     } catch (e) {
-      throw ApiException('Unexpected error: ${e.toString()}. URL: $uri');
+      throw ApiException(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'An unexpected error occurred. Please try again.',
+        ).userMessage,
+      );
     }
   }
 
@@ -240,20 +335,34 @@ class ApiService {
         return null;
 
       case 400:
-        throw ApiException('Bad request (${response.statusCode})${uri != null ? ' for $uri' : ''}: ${_extractServerMessage(response)}');
+        throw ApiException(
+          UiErrorMapper.userMessageFromRaw(
+            _extractServerMessage(response),
+            fallback: 'Please check your input and try again.',
+          ),
+        );
 
       case 401:
-        throw UnauthorizedException('Unauthorized (${response.statusCode})${uri != null ? ' for $uri' : ''}: ${_extractServerMessage(response)}');
+        throw UnauthorizedException(
+          'Your session has expired. Please log in again.',
+        );
 
       case 403:
-        throw ApiException('Forbidden (${response.statusCode})${uri != null ? ' for $uri' : ''}: ${_extractServerMessage(response)}');
+        throw ApiException(
+          'You do not have permission to perform this action.',
+        );
 
       case 404:
-        throw ApiException('Not found (${response.statusCode})${uri != null ? ' for $uri' : ''}: ${_extractServerMessage(response)}');
+        throw ApiException('The requested data was not found.');
 
       case 500:
       default:
-        throw ApiException('HTTP ${response.statusCode}${uri != null ? ' for $uri' : ''}: ${_extractServerMessage(response)}');
+        throw ApiException(
+          UiErrorMapper.userMessageFromRaw(
+            _extractServerMessage(response),
+            fallback: 'Server error. Please try again.',
+          ),
+        );
     }
   }
 
@@ -261,7 +370,9 @@ class ApiService {
   // ACCOMPANIMENTS API (ostalo nepromijenjeno)
   // ============================================
 
-  Future<List<AccompanimentGroup>> getProductAccompaniments(String productId) async {
+  Future<List<AccompanimentGroup>> getProductAccompaniments(
+    String productId,
+  ) async {
     final response = await get('/accompaniments/product/$productId');
     if (response == null) return [];
     final List<dynamic> list = response as List;
@@ -273,12 +384,17 @@ class ApiService {
     return AccompanimentGroup.fromJson(response);
   }
 
-  Future<AccompanimentGroup> createAccompanimentGroup(Map<String, dynamic> data) async {
+  Future<AccompanimentGroup> createAccompanimentGroup(
+    Map<String, dynamic> data,
+  ) async {
     final response = await post('/accompaniments/groups', body: data);
     return AccompanimentGroup.fromJson(response);
   }
 
-  Future<void> updateAccompanimentGroup(String groupId, Map<String, dynamic> data) async {
+  Future<void> updateAccompanimentGroup(
+    String groupId,
+    Map<String, dynamic> data,
+  ) async {
     await put('/accompaniments/groups/$groupId', body: data);
   }
 
@@ -286,8 +402,14 @@ class ApiService {
     await delete('/accompaniments/groups/$groupId');
   }
 
-  Future<Accompaniment> addAccompaniment(String groupId, Map<String, dynamic> data) async {
-    final response = await post('/accompaniments/groups/$groupId/accompaniments', body: data);
+  Future<Accompaniment> addAccompaniment(
+    String groupId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await post(
+      '/accompaniments/groups/$groupId/accompaniments',
+      body: data,
+    );
     return Accompaniment.fromJson(response);
   }
 
@@ -296,7 +418,10 @@ class ApiService {
     return Accompaniment.fromJson(response);
   }
 
-  Future<void> updateAccompaniment(String accompanimentId, Map<String, dynamic> data) async {
+  Future<void> updateAccompaniment(
+    String accompanimentId,
+    Map<String, dynamic> data,
+  ) async {
     await put('/accompaniments/$accompanimentId', body: data);
   }
 
@@ -305,7 +430,10 @@ class ApiService {
   }
 
   Future<bool> toggleAccompanimentAvailability(String accompanimentId) async {
-    final response = await patch('/accompaniments/$accompanimentId/toggle-availability', body: {});
+    final response = await patch(
+      '/accompaniments/$accompanimentId/toggle-availability',
+      body: {},
+    );
     return response['isAvailable'] as bool;
   }
 
@@ -313,15 +441,23 @@ class ApiService {
     String productId,
     List<String> selectedAccompanimentIds,
   ) async {
-    final response = await post('/accompaniments/validate', body: {
-      'productId': productId,
-      'selectedAccompanimentIds': selectedAccompanimentIds,
-    });
+    final response = await post(
+      '/accompaniments/validate',
+      body: {
+        'productId': productId,
+        'selectedAccompanimentIds': selectedAccompanimentIds,
+      },
+    );
     return response as Map<String, dynamic>;
   }
 
-  Future<double> calculateAccompanimentCharges(List<String> accompanimentIds) async {
-    final response = await post('/accompaniments/calculate-charges', body: accompanimentIds);
+  Future<double> calculateAccompanimentCharges(
+    List<String> accompanimentIds,
+  ) async {
+    final response = await post(
+      '/accompaniments/calculate-charges',
+      body: accompanimentIds,
+    );
     return (response['totalExtraCharge'] as num).toDouble();
   }
 }

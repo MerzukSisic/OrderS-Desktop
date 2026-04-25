@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/api/api_client.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/services/api/api_service.dart';
 import 'package:rs2_desktop/core/services/api/auth_api_service.dart';
 import 'package:rs2_desktop/models/auth/auth_response.dart';
@@ -29,6 +30,7 @@ class AuthProvider with ChangeNotifier {
 
   // Storage keys
   static const String _tokenKey = 'auth_token';
+  static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'current_user';
 
   /// Initialize - Load saved credentials
@@ -43,13 +45,13 @@ class AuthProvider with ChangeNotifier {
       if (savedToken != null && savedUserJson != null) {
         _token = savedToken;
         _apiClient.setToken(savedToken);
-        
+
         // ✅ DODANO - Sync token to ApiService (http) as well
         await ApiService().saveToken(savedToken);
 
         // Verify token is still valid
         final response = await _apiService.validateToken(savedToken);
-        
+
         if (response.success && response.data == true) {
           // Token valid, get current user
           final userResponse = await _apiService.getCurrentUser();
@@ -57,11 +59,23 @@ class AuthProvider with ChangeNotifier {
             _currentUser = userResponse.data;
             _isAuthenticated = true;
           } else {
-            // Token invalid, clear
             await _clearCredentials();
           }
         } else {
-          await _clearCredentials();
+          // Access token expired — try silent refresh
+          final savedRefreshToken = prefs.getString(_refreshTokenKey);
+          if (savedRefreshToken != null) {
+            final refreshResponse = await _apiService.refreshToken(
+              savedRefreshToken,
+            );
+            if (refreshResponse.success && refreshResponse.data != null) {
+              await _handleAuthSuccess(refreshResponse.data!);
+            } else {
+              await _clearCredentials();
+            }
+          } else {
+            await _clearCredentials();
+          }
         }
       }
     } catch (e) {
@@ -73,10 +87,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   /// Login
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _setLoading(true);
     _clearError();
 
@@ -94,7 +105,12 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Login error: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to sign in right now. Please try again.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -129,7 +145,12 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Registration error: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to complete registration right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -171,7 +192,12 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Password change error: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to change password right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -186,11 +212,11 @@ class AuthProvider with ChangeNotifier {
       final response = await _apiService.getCurrentUser();
       if (response.success && response.data != null) {
         _currentUser = response.data;
-        
+
         // Save updated user
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_userKey, response.data!.toJson().toString());
-        
+
         notifyListeners();
       }
     } catch (e) {
@@ -205,7 +231,7 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final response = await _apiService.forgotPassword(email);
-      
+
       if (response.success) {
         return true;
       } else {
@@ -213,7 +239,12 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Password reset error: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to request a password reset right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -243,7 +274,12 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError('Password reset error: $e');
+      _setError(
+        UiErrorMapper.fromException(
+          e,
+          fallback: 'Unable to reset password right now.',
+        ).userMessage,
+      );
       return false;
     } finally {
       _setLoading(false);
@@ -266,13 +302,16 @@ class AuthProvider with ChangeNotifier {
 
     // Set token in API client (Dio)
     _apiClient.setToken(_token);
-    
+
     // ✅ DODANO - Set token in ApiService (http) as well
     await ApiService().saveToken(_token!);
 
     // Save to storage
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, _token!);
+    if (authResponse.refreshToken != null) {
+      await prefs.setString(_refreshTokenKey, authResponse.refreshToken!);
+    }
     await prefs.setString(_userKey, _currentUser!.toJson().toString());
 
     notifyListeners();
@@ -283,12 +322,13 @@ class AuthProvider with ChangeNotifier {
     _currentUser = null;
     _isAuthenticated = false;
     _apiClient.clearToken();
-    
+
     // ✅ DODANO - Clear token in ApiService (http)
     await ApiService().clearToken();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    await prefs.remove(_refreshTokenKey);
     await prefs.remove(_userKey);
 
     notifyListeners();

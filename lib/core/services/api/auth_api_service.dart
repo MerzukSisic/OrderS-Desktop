@@ -1,4 +1,3 @@
-
 import 'package:rs2_desktop/core/api/api_client.dart';
 import 'package:rs2_desktop/models/auth/auth_response.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
@@ -13,10 +12,7 @@ class AuthApiService {
   }) async {
     return await _client.post(
       '/auth/login',
-      data: {
-        'email': email,
-        'password': password,
-      },
+      data: {'email': email, 'password': password},
       fromJson: (json) => AuthResponse.fromJson(json),
     );
   }
@@ -77,10 +73,7 @@ class AuthApiService {
   }) async {
     return await _client.post(
       '/auth/change-password',
-      data: {
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
-      },
+      data: {'currentPassword': currentPassword, 'newPassword': newPassword},
     );
   }
 
@@ -94,10 +87,7 @@ class AuthApiService {
 
   /// Forgot password
   Future<ApiResponse<void>> forgotPassword(String email) async {
-    return await _client.post(
-      '/auth/forgot-password',
-      data: email,
-    );
+    return await _client.post('/auth/forgot-password', data: {'email': email});
   }
 
   /// Reset password
@@ -108,11 +98,7 @@ class AuthApiService {
   }) async {
     return await _client.post(
       '/auth/reset-password',
-      data: {
-        'email': email,
-        'token': token,
-        'newPassword': newPassword,
-      },
+      data: {'email': email, 'token': token, 'newPassword': newPassword},
     );
   }
 }

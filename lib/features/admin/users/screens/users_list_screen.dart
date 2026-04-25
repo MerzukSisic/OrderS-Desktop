@@ -48,9 +48,14 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((user) {
-        return user.fullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        return user.fullName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
             user.email.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            (user.phoneNumber?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+            (user.phoneNumber?.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ??
+                false);
       }).toList();
     }
 
@@ -58,29 +63,37 @@ class _UsersListScreenState extends State<UsersListScreen> {
   }
 
   void _showDeleteDialog(UserModel user) {
+    final rootContext = context;
+    final usersProvider = rootContext.read<UsersProvider>();
+    final messenger = ScaffoldMessenger.of(rootContext);
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: rootContext,
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('Delete User'),
         content: Text('Are you sure you want to delete ${user.fullName}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              final success = await context.read<UsersProvider>().deleteUser(user.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'User deleted successfully' : 'Failed to delete user'),
-                    backgroundColor: success ? AppColors.success : AppColors.error,
+              Navigator.pop(dialogContext);
+              final success = await usersProvider.deleteUser(user.id);
+              if (!mounted) return;
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success
+                        ? 'User deleted successfully'
+                        : 'Failed to delete user',
                   ),
-                );
-              }
+                  backgroundColor: success
+                      ? AppColors.success
+                      : AppColors.error,
+                ),
+              );
             },
             child: Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
@@ -94,11 +107,13 @@ class _UsersListScreenState extends State<UsersListScreen> {
       user.id,
       isActive: !user.isActive,
     );
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? 'User status updated' : 'Failed to update status'),
+          content: Text(
+            success ? 'User status updated' : 'Failed to update status',
+          ),
           backgroundColor: success ? AppColors.success : AppColors.error,
         ),
       );
@@ -239,7 +254,10 @@ class _UsersListScreenState extends State<UsersListScreen> {
                 const DropdownMenuItem(value: null, child: Text('All Roles')),
                 const DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                 const DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
-                const DropdownMenuItem(value: 'Bartender', child: Text('Bartender')),
+                const DropdownMenuItem(
+                  value: 'Bartender',
+                  child: Text('Bartender'),
+                ),
               ],
               onChanged: (value) {
                 setState(() => _roleFilter = value);
@@ -339,7 +357,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
             IconButton(
               icon: Icon(
                 user.isActive ? Icons.toggle_on : Icons.toggle_off,
-                color: user.isActive ? AppColors.success : AppColors.textSecondary,
+                color: user.isActive
+                    ? AppColors.success
+                    : AppColors.textSecondary,
               ),
               onPressed: () => _toggleUserStatus(user),
               tooltip: user.isActive ? 'Deactivate' : 'Activate',
@@ -388,7 +408,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.success.withOpacity(0.2) : AppColors.error.withOpacity(0.2),
+        color: isActive
+            ? AppColors.success.withOpacity(0.2)
+            : AppColors.error.withOpacity(0.2),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

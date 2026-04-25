@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/providers/categories_provider.dart';
 
@@ -47,12 +48,12 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
 
     try {
       final success = await context.read<CategoriesProvider>().createCategory(
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-            imageUrl: null,
-          );
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        imageUrl: null,
+      );
 
       if (!mounted) return;
 
@@ -60,11 +61,22 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
         _showSuccessSnackBar('Category created successfully');
         Navigator.pop(context);
       } else {
-        _showErrorSnackBar('Failed to create category');
+        final error = context.read<CategoriesProvider>().error;
+        _showErrorSnackBar(
+          UiErrorMapper.userMessageFromRaw(
+            error,
+            fallback: 'Failed to create category.',
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Error: $e');
+        _showErrorSnackBar(
+          UiErrorMapper.fromException(
+            e,
+            fallback: 'Unable to create category right now.',
+          ).userMessage,
+        );
       }
     } finally {
       if (mounted) {
@@ -185,14 +197,18 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                                 border: Border.all(
                                   color: isSelected
                                       ? AppColors.primary
-                                      : AppColors.textSecondary.withValues(alpha: 0.2),
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.2,
+                                        ),
                                   width: isSelected ? 2 : 1,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 option['icon'],
-                                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
                                 size: 32,
                               ),
                             ),
@@ -235,13 +251,27 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         OutlinedButton(
-                          onPressed: _isSaving ? null : () => Navigator.pop(context),
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            side: BorderSide(
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton.icon(
@@ -256,12 +286,19 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                                   ),
                                 )
                               : const Icon(Icons.save),
-                          label: Text(_isSaving ? 'Saving...' : 'Save Category'),
+                          label: Text(
+                            _isSaving ? 'Saving...' : 'Save Category',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -305,7 +342,9 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             prefixIcon: Icon(icon, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceVariant,

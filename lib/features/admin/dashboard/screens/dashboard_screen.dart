@@ -1,6 +1,7 @@
 // lib/features/admin/dashboard/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/revenue_chart_widget.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/stat_card.dart';
@@ -59,24 +60,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildError(String error) {
+    final message = UiErrorMapper.userMessageFromRaw(
+      error,
+      fallback: 'Unable to load dashboard data right now.',
+    );
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.error),
           const SizedBox(height: 16),
-          Text(error, style: TextStyle(color: AppColors.error)),
+          Text(message, style: TextStyle(color: AppColors.error)),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadAllData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadAllData, child: const Text('Retry')),
         ],
       ),
     );
   }
 
-  Widget _buildContent(StatisticsProvider provider, RecommendationsProvider recProvider) {
+  Widget _buildContent(
+    StatisticsProvider provider,
+    RecommendationsProvider recProvider,
+  ) {
     final stats = provider.dashboardStats;
     if (stats == null) return const SizedBox.shrink();
 
@@ -98,13 +103,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: _buildTopProducts(provider.topProducts),
-                ),
+                Expanded(child: _buildTopProducts(provider.topProducts)),
                 const SizedBox(width: 24),
-                Expanded(
-                  child: _buildCategorySales(provider.categorySales),
-                ),
+                Expanded(child: _buildCategorySales(provider.categorySales)),
               ],
             ),
             const SizedBox(height: 24),
@@ -114,21 +115,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (recProvider.popularProducts.isNotEmpty)
-                  Expanded(child: _buildRecommendationSection(
-                    title: 'Popular Products',
-                    icon: Icons.local_fire_department,
-                    color: Colors.orange,
-                    products: recProvider.popularProducts,
-                  )),
-                if (recProvider.popularProducts.isNotEmpty && recProvider.timeBasedProducts.isNotEmpty)
+                  Expanded(
+                    child: _buildRecommendationSection(
+                      title: 'Popular Products',
+                      icon: Icons.local_fire_department,
+                      color: Colors.orange,
+                      products: recProvider.popularProducts,
+                    ),
+                  ),
+                if (recProvider.popularProducts.isNotEmpty &&
+                    recProvider.timeBasedProducts.isNotEmpty)
                   const SizedBox(width: 24),
                 if (recProvider.timeBasedProducts.isNotEmpty)
-                  Expanded(child: _buildRecommendationSection(
-                    title: 'Good Right Now',
-                    icon: Icons.access_time,
-                    color: Colors.teal,
-                    products: recProvider.timeBasedProducts,
-                  )),
+                  Expanded(
+                    child: _buildRecommendationSection(
+                      title: 'Good Right Now',
+                      icon: Icons.access_time,
+                      color: Colors.teal,
+                      products: recProvider.timeBasedProducts,
+                    ),
+                  ),
               ],
             ),
           ],
@@ -157,39 +163,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          ...products.take(5).map((p) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.restaurant_menu, color: color, size: 18),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          ...products
+              .take(5)
+              .map(
+                (p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
                     children: [
-                      Text(p.name, style: const TextStyle(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                      Text(
-                        NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(p.price),
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.restaurant_menu,
+                          color: color,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              NumberFormat.currency(
+                                symbol: 'KM ',
+                                decimalDigits: 2,
+                              ).format(p.price),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          )),
+              ),
         ],
       ),
     );
@@ -204,35 +236,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             const Text(
               'Dashboard',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               'Welcome back! Here\'s what\'s happening today.',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
           ],
         ),
         Text(
           DateFormat('EEEE, MMMM d, y').format(DateTime.now()),
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
       ],
     );
   }
 
   Widget _buildStatsGrid(stats) {
-    final avgOrderValue = stats.todayOrders > 0 
-        ? stats.todayRevenue / stats.todayOrders 
+    final avgOrderValue = stats.todayOrders > 0
+        ? stats.todayRevenue / stats.todayOrders
         : 0.0;
 
     return Row(
@@ -240,11 +263,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Expanded(
           child: StatCard(
             title: 'Today\'s Revenue',
-            value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                .format(stats.todayRevenue),
+            value: NumberFormat.currency(
+              symbol: 'KM ',
+              decimalDigits: 2,
+            ).format(stats.todayRevenue),
             icon: Icons.attach_money,
             color: Colors.green,
-            trend: '${stats.todayVsYesterday >= 0 ? '+' : ''}${stats.todayVsYesterday.toStringAsFixed(1)}%',
+            trend:
+                '${stats.todayVsYesterday >= 0 ? '+' : ''}${stats.todayVsYesterday.toStringAsFixed(1)}%',
             isPositiveTrend: stats.todayVsYesterday >= 0,
             subtitle: 'vs yesterday',
           ),
@@ -256,7 +282,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             value: stats.todayOrders.toString(),
             icon: Icons.shopping_cart,
             color: Colors.blue,
-            subtitle: 'Week: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.weekRevenue)}',
+            subtitle:
+                'Week: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.weekRevenue)}',
           ),
         ),
         const SizedBox(width: 16),
@@ -273,11 +300,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Expanded(
           child: StatCard(
             title: 'Avg. Order Value',
-            value: NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                .format(avgOrderValue),
+            value: NumberFormat.currency(
+              symbol: 'KM ',
+              decimalDigits: 2,
+            ).format(avgOrderValue),
             icon: Icons.trending_up,
             color: Colors.purple,
-            subtitle: 'Month: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.monthRevenue)}',
+            subtitle:
+                'Month: ${NumberFormat.currency(symbol: 'KM ', decimalDigits: 0).format(stats.monthRevenue)}',
           ),
         ),
       ],
@@ -300,13 +330,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               const Text(
                 'Revenue Overview (Last 30 Days)',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -435,8 +465,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     Text(
-                      NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                          .format(product.revenue),
+                      NumberFormat.currency(
+                        symbol: 'KM ',
+                        decimalDigits: 2,
+                      ).format(product.revenue),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -499,8 +531,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                              .format(category.revenue),
+                          NumberFormat.currency(
+                            symbol: 'KM ',
+                            decimalDigits: 2,
+                          ).format(category.revenue),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -571,8 +605,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final maxOrders = hours
                       .map((h) => h.orderCount)
                       .reduce((a, b) => a > b ? a : b);
-                  final heightPercent = maxOrders > 0 
-                      ? hour.orderCount / maxOrders 
+                  final heightPercent = maxOrders > 0
+                      ? hour.orderCount / maxOrders
                       : 0.0;
 
                   return Padding(
