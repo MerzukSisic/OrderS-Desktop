@@ -5,8 +5,8 @@ class TableModel {
   final String status;
   final String? location;
   final String? currentOrderId;
-  final double? currentOrderTotal;    
-  final int activeOrderCount;          
+  final double? currentOrderTotal;
+  final int activeOrderCount;
 
   TableModel({
     required this.id,
@@ -15,8 +15,8 @@ class TableModel {
     required this.status,
     this.location,
     this.currentOrderId,
-    this.currentOrderTotal,             
-    this.activeOrderCount = 0,          
+    this.currentOrderTotal,
+    this.activeOrderCount = 0,
   });
 
   factory TableModel.fromJson(Map<String, dynamic> json) {
@@ -27,8 +27,8 @@ class TableModel {
       status: json['status'],
       location: json['location'],
       currentOrderId: json['currentOrderId'],
-      currentOrderTotal: json['currentOrderTotal'] != null 
-          ? (json['currentOrderTotal'] as num).toDouble() 
+      currentOrderTotal: json['currentOrderTotal'] != null
+          ? (json['currentOrderTotal'] as num).toDouble()
           : null,
       activeOrderCount: json['activeOrderCount'] ?? 0,
     );

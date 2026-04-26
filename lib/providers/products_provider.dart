@@ -18,17 +18,15 @@ class ProductsProvider with ChangeNotifier {
   String? _searchQuery;
 
   // Getters
-  List<ProductModel> get products => _filteredProducts.isEmpty ? _products : _filteredProducts;
+  List<ProductModel> get products =>
+      _filteredProducts.isEmpty ? _products : _filteredProducts;
   ProductModel? get selectedProduct => _selectedProduct;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get selectedCategoryId => _selectedCategoryId;
 
   /// Fetch all products
-  Future<void> fetchProducts({
-    String? categoryId,
-    bool? isAvailable,
-  }) async {
+  Future<void> fetchProducts({String? categoryId, bool? isAvailable}) async {
     _setLoading(true);
     _clearError();
 
@@ -82,7 +80,7 @@ class ProductsProvider with ChangeNotifier {
         // Add to local state
         _products.add(response.data!);
         _applyFilters();
-        
+
         debugPrint('✅ Product created: ${response.data!.name}');
         return response.data;
       } else {
@@ -125,7 +123,9 @@ class ProductsProvider with ChangeNotifier {
 
         notifyListeners();
         debugPrint('✅ Product updated: ${response.data!.name}');
-        debugPrint('✅ Accompaniment groups: ${response.data!.accompanimentGroups.length}');
+        debugPrint(
+          '✅ Accompaniment groups: ${response.data!.accompanimentGroups.length}',
+        );
         return response.data;
       } else {
         _setError(response.error ?? 'Failed to update product');
@@ -236,12 +236,16 @@ class ProductsProvider with ChangeNotifier {
         // Update local state
         final index = _products.indexWhere((p) => p.id == productId);
         if (index != -1) {
-          _products[index] = _products[index].copyWith(isAvailable: newAvailability);
+          _products[index] = _products[index].copyWith(
+            isAvailable: newAvailability,
+          );
           _applyFilters();
         }
 
         if (_selectedProduct?.id == productId) {
-          _selectedProduct = _selectedProduct!.copyWith(isAvailable: newAvailability);
+          _selectedProduct = _selectedProduct!.copyWith(
+            isAvailable: newAvailability,
+          );
         }
 
         notifyListeners();
@@ -292,10 +296,10 @@ class ProductsProvider with ChangeNotifier {
 
       if (_searchQuery != null && _searchQuery!.isNotEmpty) {
         final query = _searchQuery!.toLowerCase();
-        matches = matches && (
-          product.name.toLowerCase().contains(query) ||
-          (product.description?.toLowerCase().contains(query) ?? false)
-        );
+        matches =
+            matches &&
+            (product.name.toLowerCase().contains(query) ||
+                (product.description?.toLowerCase().contains(query) ?? false));
       }
 
       return matches;

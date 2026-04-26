@@ -15,9 +15,8 @@ class ProductsApiService {
         if (categoryId != null) 'categoryId': categoryId,
         if (isAvailable != null) 'isAvailable': isAvailable,
       },
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 
@@ -34,9 +33,8 @@ class ProductsApiService {
     return await _client.get(
       '/products/search',
       queryParameters: {'term': term},
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 
@@ -51,14 +49,15 @@ class ProductsApiService {
         'location': location,
         if (isAvailable != null) 'isAvailable': isAvailable,
       },
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 
   /// Create product (Admin only)
-  Future<ApiResponse<ProductModel>> createProduct(Map<String, dynamic> data) async {
+  Future<ApiResponse<ProductModel>> createProduct(
+    Map<String, dynamic> data,
+  ) async {
     return await _client.post(
       '/products',
       data: data,
@@ -67,24 +66,21 @@ class ProductsApiService {
   }
 
   /// Update product (Admin only)
-  /// ✅ FIXED: Handle 204 No Content response from backend
+  /// Reloads the product after a 204 No Content response from the backend.
   Future<ApiResponse<ProductModel>> updateProduct(
     String id,
     Map<String, dynamic> data,
   ) async {
-    // ✅ Step 1: Send PUT request (backend returns 204 No Content)
     final updateResponse = await _client.put(
       '/products/$id',
       data: data,
-      fromJson: (json) => null, // ✅ Don't parse empty response
+      fromJson: (json) => null,
     );
 
-    // ✅ Step 2: If successful, fetch the updated product with accompaniments
     if (updateResponse.success) {
       return await getProductById(id);
     }
 
-    // ✅ Step 3: If failed, return error
     return ApiResponse<ProductModel>(
       success: false,
       error: updateResponse.error ?? 'Failed to update product',
@@ -92,7 +88,9 @@ class ProductsApiService {
   }
 
   /// Toggle product availability (Admin only)
-  Future<ApiResponse<Map<String, dynamic>>> toggleAvailability(String id) async {
+  Future<ApiResponse<Map<String, dynamic>>> toggleAvailability(
+    String id,
+  ) async {
     return await _client.put(
       '/products/$id/toggle-availability',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -106,10 +104,7 @@ class ProductsApiService {
   }) async {
     return await _client.put(
       '/products/bulk-availability',
-      data: {
-        'productIds': productIds,
-        'isAvailable': isAvailable,
-      },
+      data: {'productIds': productIds, 'isAvailable': isAvailable},
     );
   }
 

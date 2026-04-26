@@ -3,7 +3,6 @@ import 'package:rs2_desktop/core/services/api/common_api_services.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/models/products/accompaniment_group.dart';
 
-
 // ==================== USERS PROVIDER ====================
 
 class UsersProvider with ChangeNotifier {
@@ -422,7 +421,9 @@ class AccompanimentsProvider with ChangeNotifier {
       if (response.success && response.data != null) {
         // Update local state
         for (var group in _accompanimentGroups) {
-          final index = group.accompaniments.indexWhere((a) => a.id == accompanimentId);
+          final index = group.accompaniments.indexWhere(
+            (a) => a.id == accompanimentId,
+          );
           if (index != -1) {
             final newAvailability = response.data!['isAvailable'] as bool;
             group.accompaniments[index] = group.accompaniments[index].copyWith(

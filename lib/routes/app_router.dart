@@ -3,6 +3,7 @@ import 'package:rs2_desktop/features/admin/auth/login_screen.dart';
 import 'package:rs2_desktop/features/admin/categories/screens/category_create_screen.dart';
 import 'package:rs2_desktop/features/admin/categories/screens/category_edit_screen.dart';
 import 'package:rs2_desktop/features/admin/common/admin_layout_screen.dart';
+import 'package:rs2_desktop/features/admin/orders/screens/order_detail_screen.dart';
 import 'package:rs2_desktop/features/admin/products/screens/product_create_screen.dart';
 import 'package:rs2_desktop/features/admin/products/screens/product_edit_screen.dart';
 import 'package:rs2_desktop/features/admin/users/screens/user_create_screen.dart';
@@ -18,6 +19,7 @@ import 'package:rs2_desktop/features/admin/stores/screens/store_product_edit_scr
 import 'package:rs2_desktop/models/tables/table_model.dart';
 import 'package:rs2_desktop/models/inventory/store_model.dart';
 import 'package:rs2_desktop/models/inventory/store_product_model.dart';
+import 'package:rs2_desktop/models/orders/order_model.dart';
 
 class AppRouter {
   // Auth Routes
@@ -29,6 +31,7 @@ class AppRouter {
   static const String adminCategories = '/admin/categories';
   static const String adminInventory = '/admin/inventory';
   static const String adminProcurement = '/admin/procurement';
+  static const String adminOrders = '/admin/orders';
   static const String adminUsers = '/admin/users';
   static const String adminStatistics = '/admin/statistics';
   static const String adminTables = '/admin/tables';
@@ -42,6 +45,7 @@ class AppRouter {
   static const String adminUserCreate = '/admin/users/create';
   static const String adminUserEdit = '/admin/users/edit';
   static const String adminProcurementCheckout = '/admin/procurement/checkout';
+  static const String adminOrderDetail = '/admin/orders/detail';
   static const String adminTableCreate = '/admin/tables/create';
   static const String adminTableEdit = '/admin/tables/edit';
   static const String adminStoreCreate = '/admin/stores/create';
@@ -63,14 +67,16 @@ class AppRouter {
         return 3;
       case adminProcurement:
         return 4;
-      case adminUsers:
+      case adminOrders:
         return 5;
-      case adminStatistics:
+      case adminUsers:
         return 6;
-      case adminTables:
+      case adminStatistics:
         return 7;
-      case adminStores:
+      case adminTables:
         return 8;
+      case adminStores:
+        return 9;
       default:
         return 0;
     }
@@ -108,24 +114,29 @@ class AppRouter {
           builder: (_) => const AdminLayoutScreen(initialIndex: 4),
         );
 
-      case adminUsers:
+      case adminOrders:
         return MaterialPageRoute(
           builder: (_) => const AdminLayoutScreen(initialIndex: 5),
         );
 
-      case adminStatistics:
+      case adminUsers:
         return MaterialPageRoute(
           builder: (_) => const AdminLayoutScreen(initialIndex: 6),
         );
 
-      case adminTables:
+      case adminStatistics:
         return MaterialPageRoute(
           builder: (_) => const AdminLayoutScreen(initialIndex: 7),
         );
 
-      case adminStores:
+      case adminTables:
         return MaterialPageRoute(
           builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+        );
+
+      case adminStores:
+        return MaterialPageRoute(
+          builder: (_) => const AdminLayoutScreen(initialIndex: 9),
         );
 
       // Sub-routes (full screen modals - BEZ sidebar)
@@ -175,7 +186,7 @@ class AppRouter {
         final userId = settings.arguments as String?;
         if (userId == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 5),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 6),
           );
         }
         return MaterialPageRoute(
@@ -195,6 +206,18 @@ class AppRouter {
           fullscreenDialog: true,
         );
 
+      case adminOrderDetail:
+        final order = settings.arguments as OrderModel?;
+        if (order == null) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminLayoutScreen(initialIndex: 5),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => OrderDetailScreen(order: order),
+          fullscreenDialog: true,
+        );
+
       case adminTableCreate:
         return MaterialPageRoute(
           builder: (_) => const TableCreateScreen(),
@@ -205,7 +228,7 @@ class AppRouter {
         final table = settings.arguments as TableModel?;
         if (table == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 7),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
           );
         }
         return MaterialPageRoute(
@@ -223,7 +246,7 @@ class AppRouter {
         final store = settings.arguments as Store?;
         if (store == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 9),
           );
         }
         return MaterialPageRoute(
@@ -235,7 +258,7 @@ class AppRouter {
         final store = settings.arguments as Store?;
         if (store == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 9),
           );
         }
         return MaterialPageRoute(
@@ -247,7 +270,7 @@ class AppRouter {
         final store = settings.arguments as Store?;
         if (store == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 9),
           );
         }
         return MaterialPageRoute(
@@ -259,7 +282,7 @@ class AppRouter {
         final product = settings.arguments as StoreProductModel?;
         if (product == null) {
           return MaterialPageRoute(
-            builder: (_) => const AdminLayoutScreen(initialIndex: 8),
+            builder: (_) => const AdminLayoutScreen(initialIndex: 9),
           );
         }
         return MaterialPageRoute(

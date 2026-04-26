@@ -1,4 +1,3 @@
-
 import 'package:rs2_desktop/models/statistics/category_sales.dart';
 import 'package:rs2_desktop/models/statistics/dashboard_stats.dart';
 

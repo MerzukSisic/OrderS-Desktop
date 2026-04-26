@@ -22,8 +22,8 @@ class CategoryModel {
       description: json['description'],
       iconName: json['iconName'],
       productCount: json['productCount'],
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
     );
   }

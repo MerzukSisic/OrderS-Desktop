@@ -12,6 +12,7 @@ import 'package:rs2_desktop/models/statistics/dashboard_stats.dart';
 import 'package:rs2_desktop/models/statistics/peak_hour.dart';
 import 'package:rs2_desktop/models/statistics/product_sales.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -22,8 +23,6 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   String _selectedPeriod = '7'; // Days
-  DateTime _fromDate = DateTime.now().subtract(const Duration(days: 7));
-  DateTime _toDate = DateTime.now();
   String _selectedTab = 'overview'; // overview, products, waiters, hours
 
   @override
@@ -53,18 +52,24 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         header: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Business Analytics Report',
-                style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-            pw.Text('Generated: $now  |  Period: Last $_selectedPeriod days',
-                style: const pw.TextStyle(fontSize: 10)),
+            pw.Text(
+              'Business Analytics Report',
+              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              'Generated: $now  |  Period: Last $_selectedPeriod days',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
             pw.SizedBox(height: 8),
             pw.Divider(),
           ],
         ),
         build: (context) => [
           if (stats != null) ...[
-            pw.Text('Overview',
-                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Overview',
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
               headers: ['Metric', 'Value'],
@@ -76,58 +81,88 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ['Active Tables', '${stats.activeTables}'],
                 ['Low Stock Items', '${stats.lowStockItems}'],
               ],
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 10,
+              ),
               cellStyle: const pw.TextStyle(fontSize: 10),
             ),
             pw.SizedBox(height: 16),
           ],
           if (topProducts.isNotEmpty) ...[
-            pw.Text('Top Products',
-                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Top Products',
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
               headers: ['Product', 'Category', 'Qty Sold', 'Revenue', '%'],
-              data: topProducts.map((p) => [
-                p.productName,
-                p.categoryName,
-                '${p.quantitySold}',
-                '\$${p.revenue.toStringAsFixed(2)}',
-                '${p.percentage.toStringAsFixed(1)}%',
-              ]).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              data: topProducts
+                  .map(
+                    (p) => [
+                      p.productName,
+                      p.categoryName,
+                      '${p.quantitySold}',
+                      '\$${p.revenue.toStringAsFixed(2)}',
+                      '${p.percentage.toStringAsFixed(1)}%',
+                    ],
+                  )
+                  .toList(),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
               cellStyle: const pw.TextStyle(fontSize: 9),
             ),
             pw.SizedBox(height: 16),
           ],
           if (stats != null && stats.topWaiters.isNotEmpty) ...[
-            pw.Text('Staff Performance',
-                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Staff Performance',
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
               headers: ['Staff Member', 'Orders', 'Revenue', 'Avg Order'],
-              data: stats.topWaiters.map((w) => [
-                w.waiterName,
-                '${w.totalOrders}',
-                '\$${w.totalRevenue.toStringAsFixed(2)}',
-                '\$${w.averageOrderValue.toStringAsFixed(2)}',
-              ]).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              data: stats.topWaiters
+                  .map(
+                    (w) => [
+                      w.waiterName,
+                      '${w.totalOrders}',
+                      '\$${w.totalRevenue.toStringAsFixed(2)}',
+                      '\$${w.averageOrderValue.toStringAsFixed(2)}',
+                    ],
+                  )
+                  .toList(),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
               cellStyle: const pw.TextStyle(fontSize: 9),
             ),
             pw.SizedBox(height: 16),
           ],
           if (peakHours.isNotEmpty) ...[
-            pw.Text('Peak Hours',
-                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Peak Hours',
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
               headers: ['Hour', 'Order Count', 'Revenue'],
-              data: peakHours.map((h) => [
-                '${h.hour}:00',
-                '${h.orderCount}',
-                '\$${h.revenue.toStringAsFixed(2)}',
-              ]).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+              data: peakHours
+                  .map(
+                    (h) => [
+                      '${h.hour}:00',
+                      '${h.orderCount}',
+                      '\$${h.revenue.toStringAsFixed(2)}',
+                    ],
+                  )
+                  .toList(),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
               cellStyle: const pw.TextStyle(fontSize: 9),
             ),
           ],
@@ -136,9 +171,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
 
     final bytes = await pdf.save();
-    final filePath = '${Directory.systemTemp.path}/statistics_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final filePath =
+        '${Directory.systemTemp.path}/statistics_${DateTime.now().millisecondsSinceEpoch}.pdf';
     await File(filePath).writeAsBytes(bytes);
-    await Process.run('open', [filePath]);
+    final opened = await launchUrl(Uri.file(filePath));
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the generated PDF file.')),
+      );
+    }
   }
 
   Future<void> _loadData() async {
@@ -154,8 +195,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     if (value != null) {
       setState(() {
         _selectedPeriod = value;
-        _fromDate = DateTime.now().subtract(Duration(days: int.parse(value)));
-        _toDate = DateTime.now();
       });
       _loadData();
     }
@@ -193,9 +232,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             const SizedBox(height: 16),
             _buildTabs(),
             const SizedBox(height: 16),
-            Expanded(
-              child: _buildTabContent(provider),
-            ),
+            Expanded(child: _buildTabContent(provider)),
           ],
         );
       },
@@ -229,7 +266,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
@@ -241,19 +281,31 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   underline: const SizedBox(),
                   dropdownColor: AppColors.surface,
                   style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                  icon: Icon(Icons.arrow_drop_down, color: AppColors.textPrimary),
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    color: AppColors.textPrimary,
+                  ),
                   items: [
                     DropdownMenuItem(
                       value: '7',
-                      child: Text('Last 7 Days', style: TextStyle(color: AppColors.textPrimary)),
+                      child: Text(
+                        'Last 7 Days',
+                        style: TextStyle(color: AppColors.textPrimary),
+                      ),
                     ),
                     DropdownMenuItem(
                       value: '30',
-                      child: Text('Last 30 Days', style: TextStyle(color: AppColors.textPrimary)),
+                      child: Text(
+                        'Last 30 Days',
+                        style: TextStyle(color: AppColors.textPrimary),
+                      ),
                     ),
                     DropdownMenuItem(
                       value: '90',
-                      child: Text('Last 90 Days', style: TextStyle(color: AppColors.textPrimary)),
+                      child: Text(
+                        'Last 90 Days',
+                        style: TextStyle(color: AppColors.textPrimary),
+                      ),
                     ),
                   ],
                   onChanged: _onPeriodChanged,
@@ -266,7 +318,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 label: const Text('Export PDF'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -436,13 +491,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildTopProductsCard(stats.topProducts),
-              ),
+              Expanded(child: _buildTopProductsCard(stats.topProducts)),
               const SizedBox(width: 16),
-              Expanded(
-                child: _buildTopWaitersCard(stats.topWaiters),
-              ),
+              Expanded(child: _buildTopWaitersCard(stats.topWaiters)),
             ],
           ),
         ],
@@ -550,15 +601,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, size: 20, color: color),
@@ -568,19 +616,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ],
@@ -621,39 +663,45 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             )
           else
-            ...products.take(5).map((product) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.productName,
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${product.quantitySold} sold',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+            ...products
+                .take(5)
+                .map(
+                  (product) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.productName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                '${product.quantitySold} sold',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        '\$${product.revenue.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.success,
+                        Text(
+                          '\$${product.revenue.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
+                ),
         ],
       ),
     );
@@ -692,39 +740,45 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             )
           else
-            ...waiters.take(5).map((waiter) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              waiter.waiterName,
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${waiter.totalOrders} orders',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+            ...waiters
+                .take(5)
+                .map(
+                  (waiter) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                waiter.waiterName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                '${waiter.totalOrders} orders',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        '\$${waiter.totalRevenue.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.success,
+                        Text(
+                          '\$${waiter.totalRevenue.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
+                ),
         ],
       ),
     );
@@ -751,7 +805,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: products.map((p) => p.revenue).reduce((a, b) => a > b ? a : b) * 1.2,
+                maxY:
+                    products
+                        .map((p) => p.revenue)
+                        .reduce((a, b) => a > b ? a : b) *
+                    1.2,
                 barTouchData: BarTouchData(enabled: true),
                 titlesData: FlTitlesData(
                   show: true,
@@ -759,14 +817,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= products.length) return const Text('');
+                        if (value.toInt() >= products.length) {
+                          return const Text('');
+                        }
                         return Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             products[value.toInt()].productName.length > 8
                                 ? '${products[value.toInt()].productName.substring(0, 8)}...'
                                 : products[value.toInt()].productName,
-                            style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         );
                       },
@@ -779,13 +842,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           '\$${value.toInt()}',
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
                         );
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: products.asMap().entries.map((entry) {
@@ -796,7 +866,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         toY: entry.value.revenue,
                         color: AppColors.primary,
                         width: 20,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
                       ),
                     ],
                   );
@@ -825,35 +897,92 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             child: Row(
               children: [
-                Expanded(flex: 3, child: Text('Product', style: TextStyle(fontWeight: FontWeight.w600))),
-                Expanded(flex: 2, child: Text('Category', style: TextStyle(fontWeight: FontWeight.w600))),
-                Expanded(child: Text('Qty', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                Expanded(flex: 2, child: Text('Revenue', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
-                Expanded(child: Text('%', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Product',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Category',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Qty',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Revenue',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    '%',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
               ],
             ),
           ),
-          ...products.map((product) => Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppColors.border.withOpacity(0.5))),
+          ...products.map(
+            (product) => Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.border.withValues(alpha: 0.5),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(flex: 3, child: Text(product.productName)),
-                    Expanded(flex: 2, child: Text(product.categoryName, style: TextStyle(color: AppColors.textSecondary))),
-                    Expanded(child: Text('${product.quantitySold}', textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text('\$${product.revenue.toStringAsFixed(2)}', textAlign: TextAlign.right)),
-                    Expanded(
-                      child: Text(
-                        '${product.percentage.toStringAsFixed(1)}%',
-                        textAlign: TextAlign.right,
-                        style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600),
+              ),
+              child: Row(
+                children: [
+                  Expanded(flex: 3, child: Text(product.productName)),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      product.categoryName,
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${product.quantitySold}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '\$${product.revenue.toStringAsFixed(2)}',
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${product.percentage.toStringAsFixed(1)}%',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -875,34 +1004,86 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             child: Row(
               children: [
-                const Expanded(flex: 3, child: Text('Staff Member', style: TextStyle(fontWeight: FontWeight.w600))),
-                const Expanded(child: Text('Orders', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                const Expanded(flex: 2, child: Text('Revenue', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
-                const Expanded(flex: 2, child: Text('Avg Order', style: TextStyle(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+                const Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Staff Member',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Orders',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Revenue',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                const Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Avg Order',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
               ],
             ),
           ),
-          ...waiters.map((waiter) => Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppColors.border.withOpacity(0.5))),
+          ...waiters.map(
+            (waiter) => Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.border.withValues(alpha: 0.5),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(flex: 3, child: Text(waiter.waiterName, style: const TextStyle(fontWeight: FontWeight.w500))),
-                    Expanded(child: Text('${waiter.totalOrders}', textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text('\$${waiter.totalRevenue.toStringAsFixed(2)}', textAlign: TextAlign.right)),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '\$${waiter.averageOrderValue.toStringAsFixed(2)}',
-                        textAlign: TextAlign.right,
-                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      waiter.waiterName,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${waiter.totalOrders}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '\$${waiter.totalRevenue.toStringAsFixed(2)}',
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '\$${waiter.averageOrderValue.toStringAsFixed(2)}',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -934,10 +1115,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= peakHours.length) return const Text('');
+                        if (value.toInt() >= peakHours.length) {
+                          return const Text('');
+                        }
                         return Text(
                           '${peakHours[value.toInt()].hour}h',
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
                         );
                       },
                     ),
@@ -949,19 +1135,29 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           '${value.toInt()}',
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
                         );
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: peakHours.asMap().entries.map((entry) {
-                      return FlSpot(entry.key.toDouble(), entry.value.orderCount.toDouble());
+                      return FlSpot(
+                        entry.key.toDouble(),
+                        entry.value.orderCount.toDouble(),
+                      );
                     }).toList(),
                     isCurved: true,
                     color: AppColors.primary,
@@ -969,7 +1165,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     dotData: const FlDotData(show: true),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                     ),
                   ),
                 ],

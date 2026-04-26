@@ -27,7 +27,8 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeFuture = context.read<AuthProvider>().initialize();
+    final authProvider = context.read<AuthProvider>();
+    _initializeFuture = Future<void>.microtask(authProvider.initialize);
   }
 
   @override

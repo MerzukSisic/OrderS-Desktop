@@ -1,4 +1,3 @@
-
 import 'package:rs2_desktop/models/orders/selected_accompaniment.dart';
 
 class OrderModel {
@@ -47,15 +46,17 @@ class OrderModel {
       totalAmount: (json['totalAmount'] as num).toDouble(),
       notes: json['notes'],
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : null,
-      completedAt: json['completedAt'] != null 
-          ? DateTime.parse(json['completedAt']) 
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'])
           : null,
-      items: (json['items'] as List?)
+      items:
+          (json['items'] as List?)
               ?.map((e) => OrderItem.fromJson(e))
-              .toList() ?? [],
+              .toList() ??
+          [],
     );
   }
 
@@ -152,12 +153,14 @@ class OrderItem {
       subtotal: (json['subtotal'] as num).toDouble(),
       notes: json['notes'],
       status: json['status'],
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
-      selectedAccompaniments: (json['selectedAccompaniments'] as List?)
+      selectedAccompaniments:
+          (json['selectedAccompaniments'] as List?)
               ?.map((e) => SelectedAccompaniment.fromJson(e))
-              .toList() ?? [],
+              .toList() ??
+          [],
     );
   }
 
@@ -179,7 +182,7 @@ class OrderItem {
     };
   }
 
-  List<String> get accompanimentIds => 
+  List<String> get accompanimentIds =>
       selectedAccompaniments.map((e) => e.accompanimentId).toList();
 
   // ← DODANA copyWith METODA
@@ -207,7 +210,8 @@ class OrderItem {
       notes: notes ?? this.notes,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
-      selectedAccompaniments: selectedAccompaniments ?? this.selectedAccompaniments,
+      selectedAccompaniments:
+          selectedAccompaniments ?? this.selectedAccompaniments,
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/create_procurement_dialog.dart';
 import 'package:rs2_desktop/features/admin/procurement/widgets/procurement_card.dart';
+import 'package:rs2_desktop/models/procurement/procurement_order_model.dart';
 import 'package:rs2_desktop/providers/procurement_payments_providers.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
@@ -266,7 +267,7 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -333,7 +334,7 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
         });
       },
       backgroundColor: AppColors.surface,
-      selectedColor: AppColors.primary.withOpacity(0.2),
+      selectedColor: AppColors.primary.withValues(alpha: 0.2),
       checkmarkColor: AppColors.primary,
       side: BorderSide(
         color: isSelected ? AppColors.primary : AppColors.border,
@@ -416,7 +417,7 @@ class _ProcurementScreenState extends State<ProcurementScreen> {
     );
   }
 
-  void _navigateToCheckout(order) {
+  void _navigateToCheckout(ProcurementOrderModel order) {
     Navigator.pushNamed(
       context,
       AppRouter.adminProcurementCheckout,

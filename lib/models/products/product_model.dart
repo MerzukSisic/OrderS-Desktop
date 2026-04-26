@@ -1,4 +1,3 @@
-
 import 'package:rs2_desktop/models/products/accompaniment_group.dart';
 
 class ProductModel {
@@ -13,8 +12,8 @@ class ProductModel {
   final String preparationLocation;
   final int preparationTimeMinutes;
   final int stock;
-  final DateTime? createdAt; 
-  final DateTime? updatedAt; 
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final List<ProductIngredient> ingredients;
   final List<AccompanimentGroup> accompanimentGroups; // ✅ DODANO
 
@@ -49,18 +48,20 @@ class ProductModel {
       preparationLocation: json['preparationLocation'],
       preparationTimeMinutes: json['preparationTimeMinutes'],
       stock: json['stock'],
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : null,
-      ingredients: (json['ingredients'] as List?)
+      ingredients:
+          (json['ingredients'] as List?)
               ?.map((e) => ProductIngredient.fromJson(e))
               .toList() ??
           [],
       // ✅ DODANO: Mapiranje accompanimentGroups
-      accompanimentGroups: (json['accompanimentGroups'] as List?)
+      accompanimentGroups:
+          (json['accompanimentGroups'] as List?)
               ?.map((e) => AccompanimentGroup.fromJson(e))
               .toList() ??
           [],
@@ -83,7 +84,9 @@ class ProductModel {
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
       'ingredients': ingredients.map((e) => e.toJson()).toList(),
-      'accompanimentGroups': accompanimentGroups.map((e) => e.toJson()).toList(), // ✅ DODANO
+      'accompanimentGroups': accompanimentGroups
+          .map((e) => e.toJson())
+          .toList(), // ✅ DODANO
     };
   }
 
@@ -115,25 +118,27 @@ class ProductModel {
       imageUrl: imageUrl ?? this.imageUrl,
       isAvailable: isAvailable ?? this.isAvailable,
       preparationLocation: preparationLocation ?? this.preparationLocation,
-      preparationTimeMinutes: preparationTimeMinutes ?? this.preparationTimeMinutes,
+      preparationTimeMinutes:
+          preparationTimeMinutes ?? this.preparationTimeMinutes,
       stock: stock ?? this.stock,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       ingredients: ingredients ?? this.ingredients,
-      accompanimentGroups: accompanimentGroups ?? this.accompanimentGroups, // ✅ DODANO
+      accompanimentGroups:
+          accompanimentGroups ?? this.accompanimentGroups, // ✅ DODANO
     );
   }
 
   // ✅ DODANO: Helper metode za accompaniments
   bool get hasAccompaniments => accompanimentGroups.isNotEmpty;
-  
-  bool get hasRequiredAccompaniments => 
+
+  bool get hasRequiredAccompaniments =>
       accompanimentGroups.any((group) => group.isRequired);
-  
-  List<AccompanimentGroup> get requiredGroups => 
+
+  List<AccompanimentGroup> get requiredGroups =>
       accompanimentGroups.where((group) => group.isRequired).toList();
-  
-  List<AccompanimentGroup> get optionalGroups => 
+
+  List<AccompanimentGroup> get optionalGroups =>
       accompanimentGroups.where((group) => !group.isRequired).toList();
 }
 

@@ -289,7 +289,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
                     onChanged: (value) {
                       setState(() => _isActive = value);
                     },
-                    activeColor: AppColors.success,
+                    activeThumbColor: AppColors.success,
                   ),
                   Text(
                     _isActive ? 'Active' : 'Inactive',
@@ -368,7 +368,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
 
           // Role
           DropdownButtonFormField<String>(
-            value: _selectedRole,
+            initialValue: _selectedRole,
             decoration: InputDecoration(
               labelText: 'Role *',
               prefixIcon: const Icon(Icons.badge),
@@ -392,9 +392,11 @@ class _UserEditScreenState extends State<UserEditScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
@@ -404,14 +406,6 @@ class _UserEditScreenState extends State<UserEditScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'User ID: ${_user!.id}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
                       Text(
                         'Last updated: ${_formatDate(_user!.updatedAt ?? _user!.createdAt)}',
                         style: TextStyle(

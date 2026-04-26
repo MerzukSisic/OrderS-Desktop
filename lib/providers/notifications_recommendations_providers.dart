@@ -51,7 +51,9 @@ class NotificationsProvider with ChangeNotifier {
     try {
       final response = await _apiService.markAsRead(notificationId);
       if (response.success) {
-        final index = _notifications.indexWhere((n) => n['id'] == notificationId);
+        final index = _notifications.indexWhere(
+          (n) => n['id'] == notificationId,
+        );
         if (index != -1) {
           _notifications[index]['isRead'] = true;
           _unreadCount = (_unreadCount - 1).clamp(0, 999);

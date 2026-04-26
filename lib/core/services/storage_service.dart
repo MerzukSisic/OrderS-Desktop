@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
@@ -14,7 +15,7 @@ class StorageService {
   Future<void> saveAccessToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyAccessToken, token);
-    print('🔑 Access token saved');
+    debugPrint('Access token saved');
   }
 
   // Refresh Token
@@ -26,7 +27,7 @@ class StorageService {
   Future<void> saveRefreshToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyRefreshToken, token);
-    print('🔑 Refresh token saved');
+    debugPrint('Refresh token saved');
   }
 
   // User Data
@@ -44,6 +45,6 @@ class StorageService {
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    print('🗑️ All tokens cleared');
+    debugPrint('All tokens cleared');
   }
 }

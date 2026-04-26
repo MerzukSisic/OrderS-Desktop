@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/api/api_client.dart';
+import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/services/api/api_service.dart';
 import 'package:rs2_desktop/core/services/api/auth_api_service.dart';
@@ -10,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthProvider with ChangeNotifier {
   final AuthApiService _apiService = AuthApiService();
   final ApiClient _apiClient = ApiClient();
+  final ApiService _legacyApiService = ApiService();
 
   // State
   UserModel? _currentUser;
@@ -24,14 +28,19 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _isAuthenticated;
-  bool get isAdmin => _currentUser?.role == 'Admin';
-  bool get isWaiter => _currentUser?.role == 'Waiter';
-  bool get isBartender => _currentUser?.role == 'Bartender';
+  bool get isAdmin => _currentUser?.role == AppConstants.roleAdmin;
+  bool get isWaiter => _currentUser?.role == AppConstants.roleWaiter;
+  bool get isBartender => _currentUser?.role == AppConstants.roleBartender;
 
   // Storage keys
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'current_user';
+
+  AuthProvider() {
+    _apiClient.onUnauthorized = _handleUnauthorized;
+    _legacyApiService.onUnauthorized = _handleUnauthorized;
+  }
 
   /// Initialize - Load saved credentials
   Future<void> initialize() async {
@@ -45,15 +54,13 @@ class AuthProvider with ChangeNotifier {
       if (savedToken != null && savedUserJson != null) {
         _token = savedToken;
         _apiClient.setToken(savedToken);
+        _restoreCachedUser(savedUserJson);
 
-        // ✅ DODANO - Sync token to ApiService (http) as well
-        await ApiService().saveToken(savedToken);
+        await _legacyApiService.saveToken(savedToken);
 
-        // Verify token is still valid
         final response = await _apiService.validateToken(savedToken);
 
         if (response.success && response.data == true) {
-          // Token valid, get current user
           final userResponse = await _apiService.getCurrentUser();
           if (userResponse.success && userResponse.data != null) {
             _currentUser = userResponse.data;
@@ -62,7 +69,6 @@ class AuthProvider with ChangeNotifier {
             await _clearCredentials();
           }
         } else {
-          // Access token expired — try silent refresh
           final savedRefreshToken = prefs.getString(_refreshTokenKey);
           if (savedRefreshToken != null) {
             final refreshResponse = await _apiService.refreshToken(
@@ -79,7 +85,7 @@ class AuthProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('❌ Auth initialization error: $e');
+      debugPrint('Auth initialization error: $e');
       await _clearCredentials();
     } finally {
       _setLoading(false);
@@ -164,7 +170,7 @@ class AuthProvider with ChangeNotifier {
     try {
       await _apiService.logout();
     } catch (e) {
-      debugPrint('❌ Logout error: $e');
+      debugPrint('Logout error: $e');
     } finally {
       await _clearCredentials();
       _setLoading(false);
@@ -213,14 +219,13 @@ class AuthProvider with ChangeNotifier {
       if (response.success && response.data != null) {
         _currentUser = response.data;
 
-        // Save updated user
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_userKey, response.data!.toJson().toString());
+        await prefs.setString(_userKey, jsonEncode(response.data!.toJson()));
 
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('❌ Refresh user error: $e');
+      debugPrint('Refresh user error: $e');
     }
   }
 
@@ -300,19 +305,16 @@ class AuthProvider with ChangeNotifier {
     );
     _isAuthenticated = true;
 
-    // Set token in API client (Dio)
     _apiClient.setToken(_token);
 
-    // ✅ DODANO - Set token in ApiService (http) as well
-    await ApiService().saveToken(_token!);
+    await _legacyApiService.saveToken(_token!);
 
-    // Save to storage
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, _token!);
     if (authResponse.refreshToken != null) {
       await prefs.setString(_refreshTokenKey, authResponse.refreshToken!);
     }
-    await prefs.setString(_userKey, _currentUser!.toJson().toString());
+    await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
 
     notifyListeners();
   }
@@ -323,8 +325,7 @@ class AuthProvider with ChangeNotifier {
     _isAuthenticated = false;
     _apiClient.clearToken();
 
-    // ✅ DODANO - Clear token in ApiService (http)
-    await ApiService().clearToken();
+    await _legacyApiService.clearToken();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -342,12 +343,28 @@ class AuthProvider with ChangeNotifier {
   void _setError(String? error) {
     _error = error;
     if (error != null) {
-      debugPrint('❌ Auth Error: $error');
+      debugPrint('Auth Error: $error');
     }
     notifyListeners();
   }
 
   void _clearError() {
     _error = null;
+  }
+
+  Future<void> _handleUnauthorized() async {
+    if (!_isAuthenticated && _token == null) return;
+    await _clearCredentials();
+  }
+
+  void _restoreCachedUser(String savedUserJson) {
+    try {
+      final decoded = jsonDecode(savedUserJson);
+      if (decoded is Map<String, dynamic>) {
+        _currentUser = UserModel.fromJson(decoded);
+      }
+    } catch (_) {
+      _currentUser = null;
+    }
   }
 }

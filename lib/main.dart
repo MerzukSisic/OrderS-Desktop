@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:rs2_desktop/config/env_config.dart';
 import 'package:rs2_desktop/core/theme/app_theme.dart';
 import 'package:rs2_desktop/features/admin/auth/auth_gate_screen.dart';
 import 'package:rs2_desktop/features/admin/auth/login_screen.dart';
@@ -12,15 +13,17 @@ import 'package:rs2_desktop/providers/products_provider.dart';
 import 'package:rs2_desktop/providers/tables_provider.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
 import 'package:rs2_desktop/providers/notifications_recommendations_providers.dart';
+import 'package:rs2_desktop/providers/orders_provider.dart';
 import 'package:rs2_desktop/routes/app_router.dart';
 
 void main() async {
-  // ✅ DODATO: Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ DODATO: Initialize Stripe with your publishable key
-  const stripeKey = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
-  Stripe.publishableKey = stripeKey;
+  final stripeKey = EnvConfig.stripePublishableKey;
+  if (stripeKey.isNotEmpty) {
+    Stripe.publishableKey = stripeKey;
+    await Stripe.instance.applySettings();
+  }
 
   runApp(const OrdersDesktopApp());
 }
@@ -32,49 +35,37 @@ class OrdersDesktopApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Auth Provider (must be first)
         ChangeNotifierProvider(create: (_) => AuthProvider()),
 
-        // Business Providers
         ChangeNotifierProvider(create: (_) => ProductsProvider()),
         ChangeNotifierProvider(create: (_) => CategoriesProvider()),
         ChangeNotifierProvider(create: (_) => StatisticsProvider()),
         ChangeNotifierProvider(create: (_) => InventoryProvider()),
         ChangeNotifierProvider(create: (_) => StoresProvider()),
         ChangeNotifierProvider(create: (_) => ProcurementProvider()),
+        ChangeNotifierProvider(create: (_) => OrdersProvider()),
 
-        // ✅ DODATO: Payments Provider
         ChangeNotifierProvider(create: (_) => PaymentsProvider()),
 
-        // Notifications & Recommendations
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         ChangeNotifierProvider(create: (_) => RecommendationsProvider()),
 
-        // Tables
         ChangeNotifierProvider(create: (_) => TablesProvider()),
-
-        // User Management
         ChangeNotifierProvider(create: (_) => UsersProvider()),
-
-        // Accompaniments
         ChangeNotifierProvider(create: (_) => AccompanimentsProvider()),
       ],
       child: MaterialApp(
         title: 'OrderS Desktop',
         debugShowCheckedModeBanner: false,
 
-        // Theme Configuration
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.light,
 
-        // Auth bootstrap: initialize persisted session before deciding screen.
         home: const AuthGateScreen(),
 
-        // Route Generator
         onGenerateRoute: AppRouter.generateRoute,
 
-        // Unknown Route Handler
         onUnknownRoute: (settings) {
           return MaterialPageRoute(builder: (_) => const LoginScreen());
         },

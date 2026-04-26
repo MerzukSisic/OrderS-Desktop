@@ -63,13 +63,9 @@ class RecommendationsApiService {
   }) async {
     return await _client.get(
       '/recommendations',
-      queryParameters: {
-        if (userId != null) 'userId': userId,
-        'count': count,
-      },
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      queryParameters: {if (userId != null) 'userId': userId, 'count': count},
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 
@@ -79,9 +75,8 @@ class RecommendationsApiService {
     return await _client.get(
       '/recommendations/popular',
       queryParameters: {'count': count},
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 
@@ -91,13 +86,9 @@ class RecommendationsApiService {
   }) async {
     return await _client.get(
       '/recommendations/time-based',
-      queryParameters: {
-        'hour': hour,
-        'count': count,
-      },
-      fromJson: (json) => (json as List)
-          .map((item) => ProductModel.fromJson(item))
-          .toList(),
+      queryParameters: {'hour': hour, 'count': count},
+      fromJson: (json) =>
+          (json as List).map((item) => ProductModel.fromJson(item)).toList(),
     );
   }
 }
@@ -107,14 +98,18 @@ class RecommendationsApiService {
 class ReceiptsApiService {
   final ApiClient _client = ApiClient();
 
-  Future<ApiResponse<Map<String, dynamic>>> getReceiptByOrderId(String orderId) async {
+  Future<ApiResponse<Map<String, dynamic>>> getReceiptByOrderId(
+    String orderId,
+  ) async {
     return await _client.get(
       '/receipts/order/$orderId',
       fromJson: (json) => json as Map<String, dynamic>,
     );
   }
 
-  Future<ApiResponse<Map<String, dynamic>>> getReceiptById(String receiptId) async {
+  Future<ApiResponse<Map<String, dynamic>>> getReceiptById(
+    String receiptId,
+  ) async {
     return await _client.get(
       '/receipts/$receiptId',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -148,16 +143,16 @@ class ProcurementApiService {
   }) async {
     return await _client.get(
       '/procurement',
-      queryParameters: {
-        if (storeId != null) 'storeId': storeId,
-      },
+      queryParameters: {if (storeId != null) 'storeId': storeId},
       fromJson: (json) => (json as List)
           .map((item) => ProcurementOrderModel.fromJson(item))
           .toList(),
     );
   }
 
-  Future<ApiResponse<ProcurementOrderModel>> getProcurementOrderById(String id) async {
+  Future<ApiResponse<ProcurementOrderModel>> getProcurementOrderById(
+    String id,
+  ) async {
     return await _client.get(
       '/procurement/$id',
       fromJson: (json) => ProcurementOrderModel.fromJson(json),
@@ -184,9 +179,11 @@ class ProcurementApiService {
     );
   }
 
-  /// ✅ NEW: Create Stripe Checkout Session
+  /// Create Stripe Checkout Session
   /// Returns: { checkoutUrl: "https://checkout.stripe.com/..." }
-  Future<ApiResponse<String>> createCheckoutSession(String procurementOrderId) async {
+  Future<ApiResponse<String>> createCheckoutSession(
+    String procurementOrderId,
+  ) async {
     final response = await _client.post<Map<String, dynamic>>(
       '/procurement/$procurementOrderId/create-checkout-session',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -197,7 +194,9 @@ class ProcurementApiService {
       return ApiResponse.success(checkoutUrl);
     }
 
-    return ApiResponse.failure(response.error ?? 'Failed to create checkout session');
+    return ApiResponse.failure(
+      response.error ?? 'Failed to create checkout session',
+    );
   }
 
   Future<ApiResponse<void>> updateProcurementStatus({
@@ -217,10 +216,7 @@ class ProcurementApiService {
   }) async {
     return await _client.post(
       '/procurement/$procurementOrderId/receive',
-      data: {
-        'items': items,
-        'notes': notes,
-      },
+      data: {'items': items, 'notes': notes},
     );
   }
 }
@@ -250,7 +246,9 @@ class PaymentsApiService {
     );
   }
 
-  Future<ApiResponse<Map<String, dynamic>>> getPaymentIntent(String paymentIntentId) async {
+  Future<ApiResponse<Map<String, dynamic>>> getPaymentIntent(
+    String paymentIntentId,
+  ) async {
     return await _client.get(
       '/payments/intent/$paymentIntentId',
       fromJson: (json) => json as Map<String, dynamic>,

@@ -4,7 +4,7 @@ class AuthResponse {
   final String email;
   final String role;
   final String accessToken;
-  final String? refreshToken; 
+  final String? refreshToken;
 
   AuthResponse({
     required this.userId,

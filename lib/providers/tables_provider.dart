@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/services/api/common_api_services.dart';
 import 'package:rs2_desktop/models/tables/table_model.dart';
 
-
 class TablesProvider with ChangeNotifier {
   final TablesApiService _apiService = TablesApiService();
 
@@ -178,11 +177,11 @@ class TablesProvider with ChangeNotifier {
         if (index != -1) {
           _tables[index] = _tables[index].copyWith(status: status);
         }
-        
+
         if (_selectedTable?.id == tableId) {
           _selectedTable = _selectedTable!.copyWith(status: status);
         }
-        
+
         notifyListeners();
         return true;
       } else {

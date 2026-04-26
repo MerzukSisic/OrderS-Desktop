@@ -125,7 +125,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
               return Column(
                 children: [
                   DropdownButtonFormField<String>(
-                    value: _selectedStoreId,
+                    initialValue: _selectedStoreId,
                     decoration: InputDecoration(
                       labelText: 'Destination Store',
                       filled: true,
@@ -156,7 +156,7 @@ class _CreateProcurementDialogState extends State<CreateProcurementDialog> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String?>(
-                    value: _selectedSourceStoreId,
+                    initialValue: _selectedSourceStoreId,
                     decoration: InputDecoration(
                       labelText:
                           'Source Store (optional — leave empty for external supplier)',
@@ -605,7 +605,7 @@ class _AddProcurementItemDialogState extends State<AddProcurementItemDialog> {
 
                 return DropdownButtonFormField<String>(
                   key: const Key('add_item_product'),
-                  value: _selectedProductId,
+                  initialValue: _selectedProductId,
                   decoration: InputDecoration(
                     labelText: 'Product',
                     filled: true,

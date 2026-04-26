@@ -1,6 +1,3 @@
-
-
-
 // ==================== STATISTICS API SERVICE ====================
 
 import 'package:rs2_desktop/core/api/api_client.dart';
@@ -62,19 +59,15 @@ class StatisticsApiService {
   }
 
   /// Get top selling products
-   Future<ApiResponse<List<ProductSales>>> getTopSellingProducts({
+  Future<ApiResponse<List<ProductSales>>> getTopSellingProducts({
     int count = 10,
     int days = 30,
   }) async {
     return await _client.get(
-      '/statistics/top-selling-products', // ✅ CHANGED from '/statistics/top-selling'
-      queryParameters: {
-        'count': count,
-        'days': days,
-      },
-      fromJson: (json) => (json as List)
-          .map((item) => ProductSales.fromJson(item))
-          .toList(),
+      '/statistics/top-selling-products',
+      queryParameters: {'count': count, 'days': days},
+      fromJson: (json) =>
+          (json as List).map((item) => ProductSales.fromJson(item)).toList(),
     );
   }
 
@@ -83,9 +76,8 @@ class StatisticsApiService {
     return await _client.get(
       '/statistics/peak-hours',
       queryParameters: {'days': days},
-      fromJson: (json) => (json as List)
-          .map((item) => PeakHour.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => PeakHour.fromJson(item)).toList(),
     );
   }
 
@@ -100,9 +92,8 @@ class StatisticsApiService {
         'fromDate': fromDate.toIso8601String(),
         'toDate': toDate.toIso8601String(),
       },
-      fromJson: (json) => (json as List)
-          .map((item) => CategorySales.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => CategorySales.fromJson(item)).toList(),
     );
   }
 }
@@ -118,9 +109,7 @@ class InventoryApiService {
   }) async {
     return await _client.get(
       '/inventory/store-products',
-      queryParameters: {
-        if (storeId != null) 'storeId': storeId,
-      },
+      queryParameters: {if (storeId != null) 'storeId': storeId},
       fromJson: (json) => (json as List)
           .map((item) => StoreProductModel.fromJson(item))
           .toList(),
@@ -166,9 +155,7 @@ class InventoryApiService {
   Future<ApiResponse<double>> getTotalStockValue({String? storeId}) async {
     final response = await _client.get<double>(
       '/inventory/stock-value',
-      queryParameters: {
-        if (storeId != null) 'storeId': storeId,
-      },
+      queryParameters: {if (storeId != null) 'storeId': storeId},
     );
 
     if (response.success && response.data != null) {
@@ -248,11 +235,7 @@ class InventoryApiService {
   }) async {
     return await _client.post(
       '/inventory/store-products/$storeProductId/adjust',
-      data: {
-        'quantityChange': quantityChange,
-        'type': type,
-        'reason': reason,
-      },
+      data: {'quantityChange': quantityChange, 'type': type, 'reason': reason},
     );
   }
 
@@ -271,9 +254,8 @@ class StoresApiService {
   Future<ApiResponse<List<Store>>> getStores() async {
     return await _client.get(
       '/stores',
-      fromJson: (json) => (json as List)
-          .map((item) => Store.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => Store.fromJson(item)).toList(),
     );
   }
 

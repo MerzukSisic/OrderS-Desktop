@@ -22,7 +22,8 @@ class ConsumptionForecastModel {
       storeProductId: json['storeProductId'],
       storeProductName: json['storeProductName'],
       currentStock: json['currentStock'],
-      averageDailyConsumption: (json['averageDailyConsumption'] as num).toDouble(),
+      averageDailyConsumption: (json['averageDailyConsumption'] as num)
+          .toDouble(),
       estimatedDaysUntilDepletion: json['estimatedDaysUntilDepletion'],
       needsReorder: json['needsReorder'],
       unit: json['unit'],

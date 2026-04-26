@@ -9,7 +9,7 @@ class AccompanimentGroup {
   final int? minSelections;
   final int? maxSelections;
   final int displayOrder;
-  final DateTime? createdAt; 
+  final DateTime? createdAt;
   final List<Accompaniment> accompaniments;
 
   AccompanimentGroup({
@@ -35,10 +35,11 @@ class AccompanimentGroup {
       minSelections: json['minSelections'],
       maxSelections: json['maxSelections'],
       displayOrder: json['displayOrder'] ?? 0,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
-      accompaniments: (json['accompaniments'] as List<dynamic>?)
+      accompaniments:
+          (json['accompaniments'] as List<dynamic>?)
               ?.map((a) => Accompaniment.fromJson(a as Map<String, dynamic>))
               .toList() ??
           [],

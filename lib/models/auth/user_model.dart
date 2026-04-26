@@ -6,7 +6,7 @@ class UserModel {
   final String? phoneNumber;
   final bool isActive;
   final DateTime createdAt;
-  final DateTime? updatedAt; 
+  final DateTime? updatedAt;
 
   UserModel({
     required this.id,
@@ -28,8 +28,8 @@ class UserModel {
       phoneNumber: json['phoneNumber'],
       isActive: json['isActive'],
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : null,
     );
   }

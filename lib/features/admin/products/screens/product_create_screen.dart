@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
@@ -30,6 +34,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
   String _selectedLocation = 'Kitchen';
   bool _isActive = true;
   bool _isSaving = false;
+  File? _selectedImage;
+  String? _selectedImageDataUrl;
 
   final List<_IngredientItem> _ingredients = [];
   final List<String> _locations = ['Kitchen', 'Bar', 'Both'];
@@ -76,6 +82,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
         'isAvailable': _isActive,
         if (_descriptionController.text.trim().isNotEmpty)
           'description': _descriptionController.text.trim(),
+        if (_selectedImageDataUrl != null) 'imageUrl': _selectedImageDataUrl,
         if (_purchasePriceController.text.isNotEmpty)
           'purchasePrice': double.tryParse(_purchasePriceController.text),
         if (_ingredients.isNotEmpty)
@@ -195,6 +202,50 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
     });
   }
 
+  Future<void> _setSelectedImage(XFile image) async {
+    final bytes = await image.readAsBytes();
+    final extension = image.path.split('.').last.toLowerCase();
+    final mimeType = switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
+
+    setState(() {
+      _selectedImage = File(image.path);
+      _selectedImageDataUrl = 'data:$mimeType;base64,${base64Encode(bytes)}';
+    });
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        await _setSelectedImage(image);
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      final message = e.code == 'channel-error'
+          ? 'Image picker is not loaded. Stop and start the desktop app again.'
+          : 'Could not open image picker';
+      _showErrorSnackBar(message);
+    } catch (_) {
+      if (!mounted) return;
+      _showErrorSnackBar('Could not open image picker');
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+      _selectedImageDataUrl = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -270,6 +321,12 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                       icon: Icons.description_outlined,
                       maxLines: 3,
                     ),
+
+                    const SizedBox(height: 32),
+
+                    _buildSectionTitle('Image', Icons.image_outlined),
+                    const SizedBox(height: 16),
+                    _buildImageSection(),
 
                     const SizedBox(height: 32),
 
@@ -398,7 +455,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                                 _isActive = value;
                               });
                             },
-                            activeColor: AppColors.success,
+                            activeThumbColor: AppColors.success,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -625,7 +682,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ],
       ),
@@ -657,6 +714,89 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
           child: Divider(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
       ],
+    );
+  }
+
+  Widget _buildImageSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 160,
+              height: 120,
+              color: AppColors.primary.withValues(alpha: 0.08),
+              child: _selectedImage != null
+                  ? Image.file(_selectedImage!, fit: BoxFit.contain)
+                  : const Icon(
+                      Icons.image_outlined,
+                      color: AppColors.primary,
+                      size: 44,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Product image',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _selectedImage == null
+                      ? 'Choose an image from this computer.'
+                      : _selectedImage!.path.split(Platform.pathSeparator).last,
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(
+                        _selectedImage == null ? 'Choose Image' : 'Change',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    if (_selectedImage != null)
+                      OutlinedButton.icon(
+                        onPressed: _removeImage,
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Remove'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

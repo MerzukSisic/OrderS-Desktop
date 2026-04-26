@@ -41,10 +41,9 @@ class ProcurementOrderModel {
       deliveryDate: json['deliveryDate'] != null
           ? DateTime.parse(json['deliveryDate'])
           : null,
-      paidAt: json['paidAt'] != null
-          ? DateTime.parse(json['paidAt'])
-          : null,
-      items: (json['items'] as List?)
+      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
+      items:
+          (json['items'] as List?)
               ?.map((e) => ProcurementOrderItem.fromJson(e))
               .toList() ??
           [],
@@ -72,7 +71,7 @@ class ProcurementOrderModel {
   bool get isPaid => status == 'Paid';
   bool get isReceived => status == 'Received';
   bool get isCancelled => status == 'Cancelled';
-  
+
   // Getter za kompatibilnost sa checkout screen-om
   String? get paymentIntentId => stripePaymentIntentId;
 
@@ -97,7 +96,8 @@ class ProcurementOrderModel {
       supplier: supplier ?? this.supplier,
       totalAmount: totalAmount ?? this.totalAmount,
       status: status ?? this.status,
-      stripePaymentIntentId: stripePaymentIntentId ?? this.stripePaymentIntentId,
+      stripePaymentIntentId:
+          stripePaymentIntentId ?? this.stripePaymentIntentId,
       notes: notes ?? this.notes,
       orderDate: orderDate ?? this.orderDate,
       deliveryDate: deliveryDate ?? this.deliveryDate,
@@ -151,7 +151,8 @@ class ProcurementOrderItem {
   }
 
   bool get isFullyReceived => receivedQuantity == quantity;
-  bool get isPartiallyReceived => receivedQuantity != null && receivedQuantity! < quantity;
+  bool get isPartiallyReceived =>
+      receivedQuantity != null && receivedQuantity! < quantity;
 
   ProcurementOrderItem copyWith({
     String? id,

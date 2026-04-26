@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ PROMIJENJENO
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rs2_desktop/core/constants/api_constants.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/models/products/accompaniment.dart';
@@ -11,6 +12,7 @@ import '../../constants/app_constants.dart';
 
 class ApiService {
   static const bool _logHttp = true;
+  Future<void> Function()? onUnauthorized;
 
   void _log(String message) {
     if (_logHttp && kDebugMode) {
@@ -65,7 +67,7 @@ class ApiService {
     _accessToken = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.keyAccessToken, token);
-    debugPrint('🔑 Token saved to SharedPreferences');
+    _log('Access token saved to SharedPreferences');
   }
 
   /// Clear access token
@@ -73,7 +75,7 @@ class ApiService {
     _accessToken = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.keyAccessToken);
-    debugPrint('🗑️ Token cleared from SharedPreferences');
+    _log('Access token cleared from SharedPreferences');
   }
 
   // ============================================
@@ -102,14 +104,14 @@ class ApiService {
     ).replace(queryParameters: queryParams);
 
     try {
-      _log('➡️ GET  $uri');
+      _log('GET $uri');
 
       final response = await http
           .get(uri, headers: await _getHeaders())
           .timeout(ApiConstants.timeout);
 
       _log(
-        '⬅️ GET  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+        'GET $uri [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
       );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
@@ -146,7 +148,7 @@ class ApiService {
     final uri = Uri.parse(ApiConstants.baseUrl + endpoint);
 
     try {
-      _log('➡️ POST $uri');
+      _log('POST $uri');
       _log(body == null ? '   body: null' : '   body: ${json.encode(body)}');
 
       final response = await http
@@ -154,7 +156,7 @@ class ApiService {
           .timeout(ApiConstants.timeout);
 
       _log(
-        '⬅️ POST $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+        'POST $uri [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
       );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
@@ -191,7 +193,7 @@ class ApiService {
     final uri = Uri.parse(ApiConstants.baseUrl + endpoint);
 
     try {
-      _log('➡️ PUT  $uri');
+      _log('PUT $uri');
       _log(body == null ? '   body: null' : '   body: ${json.encode(body)}');
 
       final response = await http
@@ -199,7 +201,7 @@ class ApiService {
           .timeout(ApiConstants.timeout);
 
       _log(
-        '⬅️ PUT  $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+        'PUT $uri [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
       );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
@@ -236,7 +238,7 @@ class ApiService {
     final uri = Uri.parse(ApiConstants.baseUrl + endpoint);
 
     try {
-      _log('➡️ PATCH $uri');
+      _log('PATCH $uri');
       _log(body == null ? '   body: null' : '   body: ${json.encode(body)}');
 
       final response = await http
@@ -244,7 +246,7 @@ class ApiService {
           .timeout(ApiConstants.timeout);
 
       _log(
-        '⬅️ PATCH $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+        'PATCH $uri [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
       );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
@@ -281,14 +283,14 @@ class ApiService {
     final uri = Uri.parse(ApiConstants.baseUrl + endpoint);
 
     try {
-      _log('➡️ DELETE $uri');
+      _log('DELETE $uri');
 
       final response = await http
           .delete(uri, headers: await _getHeaders())
           .timeout(ApiConstants.timeout);
 
       _log(
-        '⬅️ DELETE $uri  [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
+        'DELETE $uri [${response.statusCode}] ${response.body.isEmpty ? '(empty body)' : ''}',
       );
       return _handleResponse(response, uri: uri);
     } on http.ClientException catch (e) {
@@ -343,6 +345,11 @@ class ApiService {
         );
 
       case 401:
+        unawaited(clearToken());
+        final callback = onUnauthorized;
+        if (callback != null) {
+          unawaited(callback());
+        }
         throw UnauthorizedException(
           'Your session has expired. Please log in again.',
         );
@@ -367,7 +374,7 @@ class ApiService {
   }
 
   // ============================================
-  // ACCOMPANIMENTS API (ostalo nepromijenjeno)
+  // ACCOMPANIMENTS API
   // ============================================
 
   Future<List<AccompanimentGroup>> getProductAccompaniments(

@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
@@ -33,6 +37,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   bool _isActive = true;
   bool _isLoading = true;
   bool _isSaving = false;
+  File? _selectedImage;
+  String? _selectedImageDataUrl;
+  bool _removeExistingImage = false;
 
   ProductModel? _product;
 
@@ -161,6 +168,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
         'isAvailable': _isActive,
         if (_descriptionController.text.trim().isNotEmpty)
           'description': _descriptionController.text.trim(),
+        if (_selectedImageDataUrl != null)
+          'imageUrl': _selectedImageDataUrl
+        else if (_removeExistingImage)
+          'imageUrl': '',
         if (_purchasePriceController.text.isNotEmpty)
           'purchasePrice': double.tryParse(_purchasePriceController.text),
         if (_ingredients.isNotEmpty)
@@ -278,6 +289,52 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   void _removeIngredient(int index) {
     setState(() {
       _ingredients.removeAt(index);
+    });
+  }
+
+  Future<void> _setSelectedImage(XFile image) async {
+    final bytes = await image.readAsBytes();
+    final extension = image.path.split('.').last.toLowerCase();
+    final mimeType = switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
+
+    setState(() {
+      _selectedImage = File(image.path);
+      _selectedImageDataUrl = 'data:$mimeType;base64,${base64Encode(bytes)}';
+      _removeExistingImage = false;
+    });
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        await _setSelectedImage(image);
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      final message = e.code == 'channel-error'
+          ? 'Image picker is not loaded. Stop and start the desktop app again.'
+          : 'Could not open image picker';
+      _showErrorSnackBar(message);
+    } catch (_) {
+      if (!mounted) return;
+      _showErrorSnackBar('Could not open image picker');
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+      _selectedImageDataUrl = null;
+      _removeExistingImage = true;
     });
   }
 
@@ -432,6 +489,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
                     const SizedBox(height: 32),
 
+                    _buildSectionTitle('Image', Icons.image_outlined),
+                    const SizedBox(height: 16),
+                    _buildImageSection(),
+
+                    const SizedBox(height: 32),
+
                     _buildSectionTitle('Pricing', Icons.attach_money),
                     const SizedBox(height: 24),
 
@@ -552,7 +615,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 _isActive = value;
                               });
                             },
-                            activeColor: AppColors.success,
+                            activeThumbColor: AppColors.success,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -778,7 +841,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ],
       ),
@@ -810,6 +873,117 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
           child: Divider(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
       ],
+    );
+  }
+
+  Widget _buildImageSection() {
+    final existingImageUrl = _product?.imageUrl;
+    final hasExistingImage =
+        existingImageUrl != null && existingImageUrl.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 160,
+              height: 120,
+              color: AppColors.primary.withValues(alpha: 0.08),
+              child: _selectedImage != null
+                  ? Image.file(_selectedImage!, fit: BoxFit.contain)
+                  : hasExistingImage && !_removeExistingImage
+                  ? _buildExistingImage(existingImageUrl)
+                  : const Icon(
+                      Icons.image_outlined,
+                      color: AppColors.primary,
+                      size: 44,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Product image',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _selectedImage != null
+                      ? _selectedImage!.path.split(Platform.pathSeparator).last
+                      : hasExistingImage && !_removeExistingImage
+                      ? 'Current product image is set.'
+                      : 'Choose an image from this computer.',
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(
+                        hasExistingImage || _selectedImage != null
+                            ? 'Change'
+                            : 'Choose Image',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    if (_selectedImage != null ||
+                        (hasExistingImage && !_removeExistingImage))
+                      OutlinedButton.icon(
+                        onPressed: _removeImage,
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Remove'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExistingImage(String imageUrl) {
+    if (imageUrl.startsWith('data:image')) {
+      final commaIndex = imageUrl.indexOf(',');
+      if (commaIndex != -1) {
+        final bytes = base64Decode(imageUrl.substring(commaIndex + 1));
+        return Image.memory(bytes, fit: BoxFit.contain);
+      }
+    }
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) =>
+          const Icon(Icons.image_outlined, color: AppColors.primary, size: 44),
     );
   }
 

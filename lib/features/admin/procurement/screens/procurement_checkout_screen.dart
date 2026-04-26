@@ -237,7 +237,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Order ID: ${order.id.substring(0, 8).toUpperCase()}',
+                        'Procurement order',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -355,17 +355,17 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
 
     switch (status) {
       case 'Paid':
-        backgroundColor = AppColors.success.withOpacity(0.1);
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
         textColor = AppColors.success;
         icon = Icons.check_circle;
         break;
       case 'Received':
-        backgroundColor = AppColors.info.withOpacity(0.1);
+        backgroundColor = AppColors.info.withValues(alpha: 0.1);
         textColor = AppColors.info;
         icon = Icons.inventory;
         break;
       default:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
         icon = Icons.pending;
     }
@@ -399,9 +399,9 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.05),
+        color: AppColors.success.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.success.withOpacity(0.3)),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,7 +432,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
@@ -744,7 +744,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.info.withOpacity(0.1),
+            color: AppColors.info.withValues(alpha: 0.1),
             border: Border.all(color: AppColors.info),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -896,7 +896,7 @@ class _ProcurementCheckoutScreenState extends State<ProcurementCheckoutScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

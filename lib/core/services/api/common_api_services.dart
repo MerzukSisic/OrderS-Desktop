@@ -1,4 +1,3 @@
-
 // ==================== CATEGORIES API SERVICE ====================
 
 import 'package:rs2_desktop/core/api/api_client.dart';
@@ -14,9 +13,8 @@ class CategoriesApiService {
   Future<ApiResponse<List<CategoryModel>>> getCategories() async {
     return await _client.get(
       '/categories',
-      fromJson: (json) => (json as List)
-          .map((item) => CategoryModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => CategoryModel.fromJson(item)).toList(),
     );
   }
 
@@ -29,7 +27,9 @@ class CategoriesApiService {
   }
 
   /// Get category with products
-  Future<ApiResponse<Map<String, dynamic>>> getCategoryWithProducts(String id) async {
+  Future<ApiResponse<Map<String, dynamic>>> getCategoryWithProducts(
+    String id,
+  ) async {
     return await _client.get(
       '/categories/$id/with-products',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -44,11 +44,7 @@ class CategoriesApiService {
   }) async {
     return await _client.post(
       '/categories',
-      data: {
-        'name': name,
-        'description': description,
-        'imageUrl': imageUrl,
-      },
+      data: {'name': name, 'description': description, 'imageUrl': imageUrl},
       fromJson: (json) => CategoryModel.fromJson(json),
     );
   }
@@ -85,12 +81,9 @@ class TablesApiService {
   Future<ApiResponse<List<TableModel>>> getTables({String? status}) async {
     return await _client.get(
       '/tables',
-      queryParameters: {
-        if (status != null) 'status': status,
-      },
-      fromJson: (json) => (json as List)
-          .map((item) => TableModel.fromJson(item))
-          .toList(),
+      queryParameters: {if (status != null) 'status': status},
+      fromJson: (json) =>
+          (json as List).map((item) => TableModel.fromJson(item)).toList(),
     );
   }
 
@@ -106,9 +99,8 @@ class TablesApiService {
   Future<ApiResponse<List<TableModel>>> getAvailableTables() async {
     return await _client.get(
       '/tables/available',
-      fromJson: (json) => (json as List)
-          .map((item) => TableModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => TableModel.fromJson(item)).toList(),
     );
   }
 
@@ -174,12 +166,9 @@ class UsersApiService {
   Future<ApiResponse<List<UserModel>>> getUsers({String? role}) async {
     return await _client.get(
       '/users',
-      queryParameters: {
-        if (role != null) 'role': role,
-      },
-      fromJson: (json) => (json as List)
-          .map((item) => UserModel.fromJson(item))
-          .toList(),
+      queryParameters: {if (role != null) 'role': role},
+      fromJson: (json) =>
+          (json as List).map((item) => UserModel.fromJson(item)).toList(),
     );
   }
 
@@ -195,9 +184,8 @@ class UsersApiService {
   Future<ApiResponse<List<UserModel>>> getWaiters() async {
     return await _client.get(
       '/users/waiters',
-      fromJson: (json) => (json as List)
-          .map((item) => UserModel.fromJson(item))
-          .toList(),
+      fromJson: (json) =>
+          (json as List).map((item) => UserModel.fromJson(item)).toList(),
     );
   }
 
@@ -255,7 +243,9 @@ class AccompanimentsApiService {
   final ApiClient _client = ApiClient();
 
   /// Get accompaniments by product ID
-  Future<ApiResponse<List<AccompanimentGroup>>> getByProductId(String productId) async {
+  Future<ApiResponse<List<AccompanimentGroup>>> getByProductId(
+    String productId,
+  ) async {
     return await _client.get(
       '/accompaniments/product/$productId',
       fromJson: (json) => (json as List)
@@ -367,7 +357,9 @@ class AccompanimentsApiService {
   }
 
   /// Get accompaniment by ID
-  Future<ApiResponse<Map<String, dynamic>>> getAccompanimentById(String id) async {
+  Future<ApiResponse<Map<String, dynamic>>> getAccompanimentById(
+    String id,
+  ) async {
     return await _client.get(
       '/accompaniments/$id',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -375,7 +367,9 @@ class AccompanimentsApiService {
   }
 
   /// Toggle accompaniment availability (Admin only)
-  Future<ApiResponse<Map<String, dynamic>>> toggleAvailability(String id) async {
+  Future<ApiResponse<Map<String, dynamic>>> toggleAvailability(
+    String id,
+  ) async {
     return await _client.put(
       '/accompaniments/$id/toggle-availability',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -403,7 +397,9 @@ class AccompanimentsApiService {
   }
 
   /// Calculate total extra charges
-  Future<ApiResponse<double>> calculateCharges(List<String> accompanimentIds) async {
+  Future<ApiResponse<double>> calculateCharges(
+    List<String> accompanimentIds,
+  ) async {
     final response = await _client.post<Map<String, dynamic>>(
       '/accompaniments/calculate-charges',
       data: accompanimentIds,

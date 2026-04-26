@@ -3,7 +3,6 @@ import 'package:rs2_desktop/core/services/api/orders_api_service.dart';
 import 'package:rs2_desktop/models/orders/order_model.dart';
 import 'package:rs2_desktop/models/products/product_model.dart';
 
-
 class CartItem {
   final ProductModel product;
   final int quantity;
@@ -19,7 +18,7 @@ class CartItem {
 
   double get totalPrice {
     double basePrice = product.price;
-    
+
     // Add accompaniment charges
     for (final group in product.accompanimentGroups) {
       for (final acc in group.accompaniments) {
@@ -28,7 +27,7 @@ class CartItem {
         }
       }
     }
-    
+
     return basePrice * quantity;
   }
 
@@ -41,7 +40,8 @@ class CartItem {
     return CartItem(
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,
-      selectedAccompanimentIds: selectedAccompanimentIds ?? this.selectedAccompanimentIds,
+      selectedAccompanimentIds:
+          selectedAccompanimentIds ?? this.selectedAccompanimentIds,
       notes: notes ?? this.notes,
     );
   }
@@ -78,7 +78,8 @@ class OrdersProvider with ChangeNotifier {
   // Getters - Cart
   List<CartItem> get cartItems => _cart.values.toList();
   int get cartCount => _cart.values.fold(0, (sum, item) => sum + item.quantity);
-  double get cartTotal => _cart.values.fold(0.0, (sum, item) => sum + item.totalPrice);
+  double get cartTotal =>
+      _cart.values.fold(0.0, (sum, item) => sum + item.totalPrice);
   bool get hasItems => _cart.isNotEmpty;
   String? get selectedTableId => _selectedTableId;
   String get orderType => _orderType;
@@ -190,12 +191,16 @@ class OrdersProvider with ChangeNotifier {
     _clearError();
 
     try {
-      final items = _cart.values.map((item) => {
-        'productId': item.product.id,
-        'quantity': item.quantity,
-        'notes': item.notes,
-        'selectedAccompanimentIds': item.selectedAccompanimentIds,
-      }).toList();
+      final items = _cart.values
+          .map(
+            (item) => {
+              'productId': item.product.id,
+              'quantity': item.quantity,
+              'notes': item.notes,
+              'selectedAccompanimentIds': item.selectedAccompanimentIds,
+            },
+          )
+          .toList();
 
       final response = await _apiService.createOrder(
         tableId: _selectedTableId,
@@ -381,9 +386,9 @@ class OrdersProvider with ChangeNotifier {
 
   /// Get active orders (from local state)
   List<OrderModel> get activeOrders {
-    return _orders.where((o) => 
-      o.status != 'Completed' && o.status != 'Cancelled'
-    ).toList();
+    return _orders
+        .where((o) => o.status != 'Completed' && o.status != 'Cancelled')
+        .toList();
   }
 
   // ========== PRIVATE HELPERS ==========

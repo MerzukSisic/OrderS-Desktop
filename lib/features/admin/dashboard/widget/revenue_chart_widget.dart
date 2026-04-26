@@ -7,10 +7,7 @@ import 'package:intl/intl.dart';
 class RevenueChartWidget extends StatelessWidget {
   final List<RevenueDataPoint> data;
 
-  const RevenueChartWidget({
-    super.key,
-    required this.data,
-  });
+  const RevenueChartWidget({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +24,7 @@ class RevenueChartWidget extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: _calculateInterval(),
             getDrawingHorizontalLine: (value) {
-              return FlLine(
-                color: AppColors.border,
-                strokeWidth: 1,
-              );
+              return FlLine(color: AppColors.border, strokeWidth: 1);
             },
           ),
           titlesData: FlTitlesData(
@@ -93,10 +87,7 @@ class RevenueChartWidget extends StatelessWidget {
           lineBarsData: [
             LineChartBarData(
               spots: data.asMap().entries.map((entry) {
-                return FlSpot(
-                  entry.key.toDouble(),
-                  entry.value.revenue,
-                );
+                return FlSpot(entry.key.toDouble(), entry.value.revenue);
               }).toList(),
               isCurved: true,
               color: AppColors.primary,
@@ -115,7 +106,7 @@ class RevenueChartWidget extends StatelessWidget {
               ),
               belowBarData: BarAreaData(
                 show: true,
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
               ),
             ),
           ],
@@ -134,7 +125,8 @@ class RevenueChartWidget extends StatelessWidget {
                     ),
                     children: [
                       TextSpan(
-                        text: '${NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(dataPoint.revenue)}\n',
+                        text:
+                            '${NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(dataPoint.revenue)}\n',
                         style: TextStyle(
                           color: AppColors.surface,
                           fontWeight: FontWeight.normal,
@@ -143,7 +135,7 @@ class RevenueChartWidget extends StatelessWidget {
                       TextSpan(
                         text: '${dataPoint.orderCount} orders',
                         style: TextStyle(
-                          color: AppColors.surface.withOpacity(0.8),
+                          color: AppColors.surface.withValues(alpha: 0.8),
                           fontSize: 12,
                         ),
                       ),

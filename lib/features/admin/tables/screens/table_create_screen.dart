@@ -159,8 +159,9 @@ class _TableCreateScreenState extends State<TableCreateScreen> {
                             ],
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (int.tryParse(v) == null)
+                              if (int.tryParse(v) == null) {
                                 return 'Must be a number';
+                              }
                               return null;
                             },
                           ),

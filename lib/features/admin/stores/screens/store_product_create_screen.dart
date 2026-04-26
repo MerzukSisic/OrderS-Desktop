@@ -10,7 +10,8 @@ class StoreProductCreateScreen extends StatefulWidget {
   const StoreProductCreateScreen({super.key, required this.store});
 
   @override
-  State<StoreProductCreateScreen> createState() => _StoreProductCreateScreenState();
+  State<StoreProductCreateScreen> createState() =>
+      _StoreProductCreateScreenState();
 }
 
 class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
@@ -37,25 +38,40 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final purchasePrice = double.tryParse(_purchasePriceController.text.trim().replaceAll(',', '.'));
+    final purchasePrice = double.tryParse(
+      _purchasePriceController.text.trim().replaceAll(',', '.'),
+    );
     final currentStock = int.tryParse(_currentStockController.text.trim());
     final minimumStock = int.tryParse(_minimumStockController.text.trim());
 
-    if (purchasePrice == null) { _showError('Invalid purchase price'); return; }
-    if (currentStock == null) { _showError('Invalid current stock'); return; }
-    if (minimumStock == null) { _showError('Invalid minimum stock'); return; }
+    if (purchasePrice == null) {
+      _showError('Invalid purchase price');
+      return;
+    }
+    if (currentStock == null) {
+      _showError('Invalid current stock');
+      return;
+    }
+    if (minimumStock == null) {
+      _showError('Invalid minimum stock');
+      return;
+    }
 
     setState(() => _isSaving = true);
     try {
-      final success = await context.read<InventoryProvider>().createStoreProduct(
-        storeId: widget.store.id,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        purchasePrice: purchasePrice,
-        currentStock: currentStock,
-        minimumStock: minimumStock,
-        unit: _unitController.text.trim(),
-      );
+      final success = await context
+          .read<InventoryProvider>()
+          .createStoreProduct(
+            storeId: widget.store.id,
+            name: _nameController.text.trim(),
+            description: _descriptionController.text.trim().isEmpty
+                ? null
+                : _descriptionController.text.trim(),
+            purchasePrice: purchasePrice,
+            currentStock: currentStock,
+            minimumStock: minimumStock,
+            unit: _unitController.text.trim(),
+          );
       if (!mounted) return;
       if (success) {
         _showSuccess('Product created successfully');
@@ -70,21 +86,37 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
   }
 
   void _showSuccess(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [const Icon(Icons.check_circle, color: Colors.white), const SizedBox(width: 12), Text(msg)]),
-      backgroundColor: AppColors.success,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(msg),
+          ],
+        ),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [const Icon(Icons.error_outline, color: Colors.white), const SizedBox(width: 12), Text(msg)]),
-      backgroundColor: AppColors.error,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(msg),
+          ],
+        ),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
@@ -100,7 +132,11 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
         ),
         title: Text(
           'Add Product – ${widget.store.name}',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -113,21 +149,27 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                ),
               ),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Product Information', Icons.inventory_2_outlined),
+                    _buildSectionTitle(
+                      'Product Information',
+                      Icons.inventory_2_outlined,
+                    ),
                     const SizedBox(height: 24),
                     _buildTextField(
                       controller: _nameController,
                       label: 'Product Name *',
                       hint: 'e.g. Coffee Beans',
                       icon: Icons.label_outline,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Required' : null,
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
@@ -146,11 +188,20 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             label: 'Purchase Price (KM) *',
                             hint: 'e.g. 12.50',
                             icon: Icons.attach_money,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.,]'),
+                              ),
+                            ],
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (double.tryParse(v.replaceAll(',', '.')) == null) return 'Invalid number';
+                              if (double.tryParse(v.replaceAll(',', '.')) ==
+                                  null) {
+                                return 'Invalid number';
+                              }
                               return null;
                             },
                           ),
@@ -162,7 +213,8 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             label: 'Unit *',
                             hint: 'e.g. kg, L, kom',
                             icon: Icons.straighten,
-                            validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Required' : null,
                           ),
                         ),
                       ],
@@ -177,10 +229,14 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             hint: 'e.g. 50',
                             icon: Icons.storage_outlined,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (int.tryParse(v) == null) return 'Must be a number';
+                              if (int.tryParse(v) == null) {
+                                return 'Must be a number';
+                              }
                               return null;
                             },
                           ),
@@ -193,10 +249,14 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             hint: 'e.g. 10',
                             icon: Icons.warning_amber_outlined,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (int.tryParse(v) == null) return 'Must be a number';
+                              if (int.tryParse(v) == null) {
+                                return 'Must be a number';
+                              }
                               return null;
                             },
                           ),
@@ -208,26 +268,52 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         OutlinedButton(
-                          onPressed: _isSaving ? null : () => Navigator.pop(context),
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            side: BorderSide(
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton.icon(
                           onPressed: _isSaving ? null : _handleSave,
                           icon: _isSaving
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
                               : const Icon(Icons.save),
                           label: Text(_isSaving ? 'Saving...' : 'Save Product'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -255,9 +341,18 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
           child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: 12),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: Divider(color: AppColors.primary.withValues(alpha: 0.2))),
+        Expanded(
+          child: Divider(color: AppColors.primary.withValues(alpha: 0.2)),
+        ),
       ],
     );
   }
@@ -275,7 +370,14 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -286,13 +388,26 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
-            prefixIcon: maxLines == 1 ? Icon(icon, color: AppColors.primary) : null,
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
+            prefixIcon: maxLines == 1
+                ? Icon(icon, color: AppColors.primary)
+                : null,
             filled: true,
             fillColor: AppColors.surfaceVariant,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.error)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error),
+            ),
           ),
         ),
       ],

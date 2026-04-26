@@ -7,10 +7,7 @@ import 'package:intl/intl.dart';
 class InventoryLogsDialog extends StatefulWidget {
   final String productId;
 
-  const InventoryLogsDialog({
-    super.key,
-    required this.productId,
-  });
+  const InventoryLogsDialog({super.key, required this.productId});
 
   @override
   State<InventoryLogsDialog> createState() => _InventoryLogsDialogState();
@@ -22,9 +19,9 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<InventoryProvider>().fetchInventoryLogs(
-            storeProductId: widget.productId,
-            days: 30,
-          );
+        storeProductId: widget.productId,
+        days: 30,
+      );
     });
   }
 
@@ -32,9 +29,7 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: 700,
         height: 600,
@@ -75,7 +70,7 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.history, color: AppColors.primary, size: 24),
@@ -87,18 +82,12 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
             children: [
               Text(
                 'Inventory Logs',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
               Text(
                 'Last 30 days of inventory changes',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -134,18 +123,12 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
           const SizedBox(height: 16),
           Text(
             'No logs found',
-            style: TextStyle(
-              fontSize: 18,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 18, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'No inventory changes recorded yet',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -155,10 +138,8 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
   Widget _buildLogsList(List logs) {
     return ListView.separated(
       itemCount: logs.length,
-      separatorBuilder: (context, index) => Divider(
-        height: 1,
-        color: AppColors.border,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: AppColors.border),
       itemBuilder: (context, index) {
         final log = logs[index];
         return _buildLogItem(log);
@@ -177,7 +158,7 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -229,18 +210,12 @@ class _InventoryLogsDialogState extends State<InventoryLogsDialog> {
             children: [
               Text(
                 DateFormat('MMM dd, yyyy').format(log.createdAt),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 2),
               Text(
                 DateFormat('HH:mm').format(log.createdAt),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
               ),
             ],
           ),

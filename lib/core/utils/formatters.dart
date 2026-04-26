@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 class Formatters {
   // Currency formatter
   static String currency(double amount, {String symbol = 'KM'}) {
-    return '';
+    return NumberFormat.currency(
+      symbol: '$symbol ',
+      decimalDigits: 2,
+    ).format(amount);
   }
 
   // Date formatter
@@ -17,8 +20,10 @@ class Formatters {
   }
 
   // DateTime formatter
-  static String dateTime(DateTime dateTime,
-      {String format = 'dd.MM.yyyy HH:mm'}) {
+  static String dateTime(
+    DateTime dateTime, {
+    String format = 'dd.MM.yyyy HH:mm',
+  }) {
     return DateFormat(format).format(dateTime);
   }
 
@@ -41,12 +46,12 @@ class Formatters {
   // Phone number formatter
   static String phoneNumber(String phone) {
     if (phone.length <= 3) return phone;
-    final cleaned = phone.replaceAll(RegExp(r'[^d]'), '');
+    final cleaned = phone.replaceAll(RegExp(r'[^\d]'), '');
     if (cleaned.length <= 3) return cleaned;
     if (cleaned.length <= 6) {
-      return '-';
+      return '${cleaned.substring(0, 3)}-${cleaned.substring(3)}';
     }
-    return '--';
+    return '${cleaned.substring(0, 3)}-${cleaned.substring(3, 6)}-${cleaned.substring(6)}';
   }
 
   // Capitalize first letter

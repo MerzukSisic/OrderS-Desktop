@@ -32,11 +32,15 @@ void main() {
     await tester.pump();
     expect(tappedIndex, 4);
 
+    await tester.tap(find.text('Orders'));
+    await tester.pump();
+    expect(tappedIndex, 5);
+
     await tester.drag(find.byType(ListView), const Offset(0, -300));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Stores'));
     await tester.tap(find.text('Stores'));
     await tester.pump();
-    expect(tappedIndex, 8);
+    expect(tappedIndex, 9);
   });
 }

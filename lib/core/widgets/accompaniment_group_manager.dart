@@ -16,7 +16,8 @@ class AccompanimentGroupManager extends StatefulWidget {
   });
 
   @override
-  State<AccompanimentGroupManager> createState() => _AccompanimentGroupManagerState();
+  State<AccompanimentGroupManager> createState() =>
+      _AccompanimentGroupManagerState();
 }
 
 class _AccompanimentGroupManagerState extends State<AccompanimentGroupManager> {
@@ -30,16 +31,18 @@ class _AccompanimentGroupManagerState extends State<AccompanimentGroupManager> {
 
   void _addNewGroup() {
     setState(() {
-      _groups.add(AccompanimentGroup(
-        id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
-        name: '',
-        productId: '',
-        selectionType: 'Multiple',
-        isRequired: false,
-        displayOrder: _groups.length,
-        accompaniments: [],
-        createdAt: DateTime.now(),
-      ));
+      _groups.add(
+        AccompanimentGroup(
+          id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
+          name: '',
+          productId: '',
+          selectionType: 'Multiple',
+          isRequired: false,
+          displayOrder: _groups.length,
+          accompaniments: [],
+          createdAt: DateTime.now(),
+        ),
+      );
     });
     widget.onGroupsChanged(_groups);
   }
@@ -104,7 +107,10 @@ class _AccompanimentGroupManagerState extends State<AccompanimentGroupManager> {
                 label: const Text('Add Group'),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -156,7 +162,7 @@ class _AccompanimentGroupManagerState extends State<AccompanimentGroupManager> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _groups.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 return _AccompanimentGroupCard(
                   group: _groups[index],
@@ -184,7 +190,8 @@ class _AccompanimentGroupCard extends StatefulWidget {
   });
 
   @override
-  State<_AccompanimentGroupCard> createState() => _AccompanimentGroupCardState();
+  State<_AccompanimentGroupCard> createState() =>
+      _AccompanimentGroupCardState();
 }
 
 class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
@@ -216,18 +223,20 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
   }
 
   void _notifyChanges() {
-    widget.onUpdate(AccompanimentGroup(
-      id: widget.group.id,
-      name: _nameController.text,
-      productId: widget.group.productId,
-      selectionType: _selectionType,
-      isRequired: _isRequired,
-      minSelections: _minSelections,
-      maxSelections: _maxSelections,
-      displayOrder: widget.group.displayOrder,
-      accompaniments: _accompaniments,
-      createdAt: widget.group.createdAt,
-    ));
+    widget.onUpdate(
+      AccompanimentGroup(
+        id: widget.group.id,
+        name: _nameController.text,
+        productId: widget.group.productId,
+        selectionType: _selectionType,
+        isRequired: _isRequired,
+        minSelections: _minSelections,
+        maxSelections: _maxSelections,
+        displayOrder: widget.group.displayOrder,
+        accompaniments: _accompaniments,
+        createdAt: widget.group.createdAt,
+      ),
+    );
   }
 
   void _addAccompaniment() {
@@ -279,12 +288,16 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () => setState(() => _isExpanded = !_isExpanded),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.05),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -320,7 +333,9 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                               '${_accompaniments.length} option${_accompaniments.length != 1 ? 's' : ''}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary.withValues(alpha: 0.7),
+                                color: AppColors.textSecondary.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                             ),
                         ],
@@ -328,7 +343,10 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                     ),
                     if (_accompaniments.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
@@ -375,11 +393,15 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                             _buildLabel('Group Name *'),
                             TextFormField(
                               controller: _nameController,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'e.g. Milk Type, Toppings, Sides',
                                 hintStyle: TextStyle(
-                                  color: AppColors.textSecondary.withValues(alpha: 0.5),
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 filled: true,
                                 fillColor: AppColors.surfaceVariant,
@@ -396,7 +418,9 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                             const SizedBox(height: 16),
                             _buildLabel('Selection Type'),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceVariant,
                                 borderRadius: BorderRadius.circular(8),
@@ -450,7 +474,10 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                               },
                               title: const Text(
                                 'Required Selection',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               controlAffinity: ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
@@ -461,7 +488,9 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                             TextFormField(
                               initialValue: _minSelections?.toString() ?? '',
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                              ),
                               decoration: InputDecoration(
                                 hintText: '0',
                                 filled: true,
@@ -487,7 +516,9 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                             TextFormField(
                               initialValue: _maxSelections?.toString() ?? '',
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'No limit',
                                 filled: true,
@@ -552,7 +583,9 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                           'No options added yet',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondary.withValues(alpha: 0.5),
+                            color: AppColors.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
                           ),
                         ),
                       ),
@@ -561,17 +594,19 @@ class _AccompanimentGroupCardState extends State<_AccompanimentGroupCard> {
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 5,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 5,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
                       itemCount: _accompaniments.length,
                       itemBuilder: (context, index) {
                         return _AccompanimentItem(
                           accompaniment: _accompaniments[index],
-                          onUpdate: (updated) => _updateAccompaniment(index, updated),
+                          onUpdate: (updated) =>
+                              _updateAccompaniment(index, updated),
                           onRemove: () => _removeAccompaniment(index),
                         );
                       },
@@ -642,15 +677,17 @@ class _AccompanimentItemState extends State<_AccompanimentItem> {
   }
 
   void _notifyChanges() {
-    widget.onUpdate(Accompaniment(
-      id: widget.accompaniment.id,
-      accompanimentGroupId: widget.accompaniment.accompanimentGroupId,
-      name: _nameController.text,
-      extraCharge: double.tryParse(_priceController.text) ?? 0.0,
-      isAvailable: widget.accompaniment.isAvailable,
-      displayOrder: widget.accompaniment.displayOrder,
-      createdAt: widget.accompaniment.createdAt,
-    ));
+    widget.onUpdate(
+      Accompaniment(
+        id: widget.accompaniment.id,
+        accompanimentGroupId: widget.accompaniment.accompanimentGroupId,
+        name: _nameController.text,
+        extraCharge: double.tryParse(_priceController.text) ?? 0.0,
+        isAvailable: widget.accompaniment.isAvailable,
+        displayOrder: widget.accompaniment.displayOrder,
+        createdAt: widget.accompaniment.createdAt,
+      ),
+    );
   }
 
   @override
@@ -660,9 +697,7 @@ class _AccompanimentItemState extends State<_AccompanimentItem> {
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -670,7 +705,10 @@ class _AccompanimentItemState extends State<_AccompanimentItem> {
           Expanded(
             child: TextFormField(
               controller: _nameController,
-              style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: 'Name',
                 hintStyle: TextStyle(
@@ -691,8 +729,13 @@ class _AccompanimentItemState extends State<_AccompanimentItem> {
             width: 80,
             child: TextFormField(
               controller: _priceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: '0.00',
                 hintStyle: TextStyle(

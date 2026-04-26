@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
@@ -585,18 +587,7 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: product.imageUrl != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        product.imageUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(
-                                              Icons.image_outlined,
-                                              color: AppColors.primary,
-                                            ),
-                                      ),
-                                    )
+                                  ? _buildProductThumbnail(product.imageUrl!)
                                   : const Icon(
                                       Icons.image_outlined,
                                       color: AppColors.primary,
@@ -780,6 +771,38 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProductThumbnail(String imageUrl) {
+    Widget fallback() {
+      return const Icon(Icons.image_outlined, color: AppColors.primary);
+    }
+
+    if (imageUrl.startsWith('data:image')) {
+      final commaIndex = imageUrl.indexOf(',');
+      if (commaIndex == -1) return fallback();
+
+      try {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.memory(
+            base64Decode(imageUrl.substring(commaIndex + 1)),
+            fit: BoxFit.cover,
+          ),
+        );
+      } catch (_) {
+        return fallback();
+      }
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => fallback(),
       ),
     );
   }

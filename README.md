@@ -1,7 +1,7 @@
 # OrderS — Desktop Aplikacija
 **Autor:** Merzuk Šišić (IB220060)  
 **Predmet:** Razvoj softvera II  
-**Akademska godina:** 2024/2025
+**Akademska godina:** 2025/2026
 
 ---
 
@@ -44,6 +44,12 @@ OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena
 - ✅ Stripe Checkout integracija za kartično plaćanje
 - ✅ Automatsko ažuriranje statusa putem webhook-a
 
+**Narudžbe:**
+- ✅ Pregled svih narudžbi s pretragom po ID-u, konobaru i stolu
+- ✅ Filtriranje po statusu i tipu narudžbe
+- ✅ Uvid u detalje narudžbe, stavke, priloge i ukupne iznose
+- ✅ Promjena statusa i otkazivanje narudžbe uz confirmation dialog
+
 **Upravljanje stolovima:**
 - ✅ CRUD operacije — kreiranje/uređivanje/brisanje stolova
 - ✅ Filtriranje po statusu (Available/Occupied/Reserved)
@@ -62,8 +68,8 @@ OrderS desktop aplikacija razvijena je u Flutteru za Windows/macOS i namijenjena
 - ✅ Export PDF izvještaja (NotoSans font, otvara se u sistemskom pregledaču)
 
 ### Povezani repozitoriji:
-- ⚙️ **Backend API:** [OrdersAPI repo]
-- 📱 **Mobile aplikacija:** [orders_mobile repo]
+- **Backend API:** OrdersAPI repo
+- **Mobile aplikacija:** orders_mobile repo
 
 ---
 
@@ -92,29 +98,35 @@ cd rs2-desktop
 flutter pub get
 
 # macOS
-flutter run -d macos --dart-define=API_BASE_URL=http://localhost:5220/api --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders
+flutter run -d macos \
+  --dart-define=API_BASE_URL=http://localhost:5220/api \
+  --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders \
+  --dart-define=STRIPE_PUBLISHABLE_KEY=<stripe_publishable_key>
 
 # Windows
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:5220/api --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders
+flutter run -d windows ^
+  --dart-define=API_BASE_URL=http://localhost:5220/api ^
+  --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders ^
+  --dart-define=STRIPE_PUBLISHABLE_KEY=<stripe_publishable_key>
 ```
 
 ### Pokretanje prebuilt EXE-a:
 ```bash
 # Ekstraktovati build arhivu (šifra: fit)
-7z x fit-build-26-02-22.zip
+7z x fit-build-2026-04-26.zip
 
 # Pokrenuti aplikaciju
 cd build/windows/x64/runner/Release/
-orders_flutter_desktop.exe
+rs2_desktop.exe
 ```
 
 ---
 
 ## 🔐 Login podaci
 
-| Email | Lozinka | Uloga |
-|---|---|---|
-| admin@orders.com | password123 | Admin |
+| Kontekst | Email | Lozinka | Uloga |
+|---|---|---|---|
+| Desktop verzija | admin@orders.com | password123 | Admin |
 
 > **Napomena:** Desktop aplikacija je dostupna samo Admin korisnicima. Backend mora biti pokrenut na `localhost:5220`.
 
@@ -124,12 +136,15 @@ orders_flutter_desktop.exe
 
 ```bash
 flutter clean
-flutter build windows --release
+flutter build windows --release ^
+  --dart-define=API_BASE_URL=http://localhost:5220/api ^
+  --dart-define=SIGNALR_URL=http://localhost:5220/hubs/orders ^
+  --dart-define=STRIPE_PUBLISHABLE_KEY=<stripe_publishable_key>
 ```
 
 **Lokacija outputa:** `build/windows/x64/runner/Release/`
 
-Build arhiva se nalazi u root folderu repoa: `fit-build-26-02-22.zip` (split arhiva, šifra: `fit`).
+Build arhivu za predaju kreirati kroz GitHub Release, npr. `fit-build-2026-04-26.zip`. U release ne postavljati `.env`; konfiguracijske tajne držati u šifrovanoj ZIP arhivi, npr. `fit_env.zip`.
 
 ---
 
@@ -140,23 +155,23 @@ rs2-desktop/
 ├── lib/
 │   ├── core/
 │   │   ├── services/api/          # API servisi
-│   │   └── config/                # EnvConfig — dart-define API adresa
+│   │   └── ...
+│   ├── config/                    # EnvConfig - dart-define API adresa
 │   ├── models/                    # Data modeli
 │   ├── providers/                 # State management (Provider)
 │   ├── screens/
 │   │   ├── auth/                  # Login ekran
 │   │   └── admin/                 # Dashboard, Proizvodi, Inventar,
-│   │                              # Nabavka, Korisnici, Statistike,
-│   │                              # Stolovi, Skladišta
+│   │                              # Nabavka, Narudžbe, Korisnici,
+│   │                              # Statistike, Stolovi, Skladišta
 │   ├── widgets/                   # Reusable komponente
 │   │   ├── admin_sidebar.dart     # Persistent sidebar navigacija
 │   │   └── ...
 │   └── main.dart
 ├── build/windows/x64/runner/Release/  # EXE output
-├── fit-build-26-02-22.zip             # Build arhiva (šifra: fit)
-└── .env.zip                           # Konfiguracijski fajl (šifra: fit)
+└── fit_env.zip                        # Konfiguracijski fajl (šifra: fit)
 ```
 
 ---
 
-*OrderS — RS2 2024/2025 — Merzuk Šišić — IB220060*
+*OrderS — RS2 2025/2026 — Merzuk Šišić — IB220060*

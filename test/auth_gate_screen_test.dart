@@ -5,17 +5,24 @@ import 'package:rs2_desktop/features/admin/auth/auth_gate_screen.dart';
 import 'package:rs2_desktop/providers/auth_provider.dart';
 
 class FakeAuthProvider extends AuthProvider {
-  FakeAuthProvider({required bool authenticated, this.delay = Duration.zero})
-    : _authenticated = authenticated;
+  FakeAuthProvider({
+    required bool authenticated,
+    this.delay = Duration.zero,
+    this.notifyDuringInitialize = false,
+  }) : _authenticated = authenticated;
 
   final Duration delay;
   final bool _authenticated;
+  final bool notifyDuringInitialize;
 
   @override
   bool get isAuthenticated => _authenticated;
 
   @override
   Future<void> initialize() async {
+    if (notifyDuringInitialize) {
+      notifyListeners();
+    }
     if (delay > Duration.zero) {
       await Future<void>.delayed(delay);
     }
@@ -75,5 +82,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('login-home'), findsOneWidget);
     expect(find.text('admin-home'), findsNothing);
+  });
+
+  testWidgets('Auth gate can initialize a provider that notifies listeners', (
+    WidgetTester tester,
+  ) async {
+    final authProvider = FakeAuthProvider(
+      authenticated: false,
+      notifyDuringInitialize: true,
+    );
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AuthProvider>.value(
+        value: authProvider,
+        child: MaterialApp(
+          home: AuthGateScreen(
+            loadingBuilder: (_) => const Text('loading'),
+            unauthenticatedBuilder: (_) => const Text('login-home'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('login-home'), findsOneWidget);
   });
 }

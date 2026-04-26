@@ -25,7 +25,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<InventoryProvider>().fetchStoreProducts(storeId: widget.store.id);
+        context.read<InventoryProvider>().fetchStoreProducts(
+          storeId: widget.store.id,
+        );
       }
     });
   }
@@ -41,7 +43,8 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
     if (_searchQuery.isEmpty) return storeOnly;
     return storeOnly.where((p) {
       return p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (p.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (p.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+              false) ||
           p.unit.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
@@ -60,10 +63,17 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                 color: AppColors.error.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.delete_outline, color: AppColors.error, size: 24),
+              child: const Icon(
+                Icons.delete_outline,
+                color: AppColors.error,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
-            const Text('Delete Product', style: TextStyle(color: AppColors.textPrimary)),
+            const Text(
+              'Delete Product',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
           ],
         ),
         content: Text(
@@ -71,18 +81,31 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final success = await context.read<InventoryProvider>().deleteStoreProduct(product.id);
+              final success = await context
+                  .read<InventoryProvider>()
+                  .deleteStoreProduct(product.id);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(success ? 'Product deleted' : 'Failed to delete product'),
-                  backgroundColor: success ? AppColors.success : AppColors.error,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success ? 'Product deleted' : 'Failed to delete product',
+                    ),
+                    backgroundColor: success
+                        ? AppColors.success
+                        : AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -103,7 +126,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
       body: Consumer<InventoryProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.storeProducts.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
 
           if (provider.error != null && provider.storeProducts.isEmpty) {
@@ -113,10 +138,14 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                 children: [
                   Icon(Icons.error_outline, size: 48, color: AppColors.error),
                   const SizedBox(height: 16),
-                  Text(provider.error!, style: TextStyle(color: AppColors.error)),
+                  Text(
+                    provider.error!,
+                    style: TextStyle(color: AppColors.error),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => provider.fetchStoreProducts(storeId: widget.store.id),
+                    onPressed: () =>
+                        provider.fetchStoreProducts(storeId: widget.store.id),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -138,11 +167,21 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 64,
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'No products found',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 18, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -150,7 +189,8 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         itemCount: filtered.length,
-                        itemBuilder: (context, index) => _buildProductCard(filtered[index]),
+                        itemBuilder: (context, index) =>
+                            _buildProductCard(filtered[index]),
                       ),
               ),
             ],
@@ -165,7 +205,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.primary.withValues(alpha: 0.1))),
+        border: Border(
+          bottom: BorderSide(color: AppColors.primary.withValues(alpha: 0.1)),
+        ),
       ),
       child: Row(
         children: [
@@ -181,21 +223,33 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
               children: [
                 Text(
                   widget.store.name,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$count products',
-                  style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
           ),
           Container(
-            decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: IconButton(
               icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
-              onPressed: () => context.read<InventoryProvider>().fetchStoreProducts(storeId: widget.store.id),
+              onPressed: () => context
+                  .read<InventoryProvider>()
+                  .fetchStoreProducts(storeId: widget.store.id),
               tooltip: 'Refresh',
             ),
           ),
@@ -211,7 +265,8 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                       .where((p) => p.storeId == widget.store.id)
                       .map((p) => p.name.toLowerCase())
                       .toSet(),
-                  onAdded: () => invProvider.fetchStoreProducts(storeId: widget.store.id),
+                  onAdded: () =>
+                      invProvider.fetchStoreProducts(storeId: widget.store.id),
                 ),
               );
             },
@@ -221,7 +276,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 0,
             ),
           ),
@@ -238,11 +295,17 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
         style: const TextStyle(color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Search by name, description, or unit...',
-          hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+          hintStyle: TextStyle(
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+          ),
           prefixIcon: const Icon(Icons.search, color: AppColors.primary),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, size: 20, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.clear,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = '');
@@ -251,7 +314,10 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
               : null,
           filled: true,
           fillColor: AppColors.surfaceVariant,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.primary, width: 2),
@@ -263,7 +329,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
   }
 
   Widget _buildProductCard(StoreProductModel product) {
-    final stockColor = product.isLowStock ? AppColors.warning : AppColors.success;
+    final stockColor = product.isLowStock
+        ? AppColors.warning
+        : AppColors.success;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -290,7 +358,10 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
           children: [
             Text(
               product.name,
-              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(width: 8),
             if (product.isLowStock)
@@ -299,11 +370,17 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Text(
                   'Low Stock',
-                  style: TextStyle(color: AppColors.warning, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppColors.warning,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
           ],
@@ -315,23 +392,38 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
               const SizedBox(height: 4),
               Text(
                 product.description!,
-                style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 12),
+                style: TextStyle(
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
+                  fontSize: 12,
+                ),
               ),
             ],
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.storage_outlined, size: 14, color: AppColors.textSecondary),
+                Icon(
+                  Icons.storage_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'Stock: ${product.currentStock} ${product.unit}  |  Min: ${product.minimumStock} ${product.unit}',
-                  style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7)),
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                  ),
                 ),
                 const SizedBox(width: 12),
-                Icon(Icons.attach_money, size: 14, color: AppColors.textSecondary),
+                Icon(
+                  Icons.attach_money,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 Text(
                   '${product.purchasePrice.toStringAsFixed(2)} KM',
-                  style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7)),
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
@@ -349,7 +441,9 @@ class _StoreProductsScreenState extends State<StoreProductsScreen> {
                   arguments: product,
                 );
                 if (mounted) {
-                  context.read<InventoryProvider>().fetchStoreProducts(storeId: widget.store.id);
+                  context.read<InventoryProvider>().fetchStoreProducts(
+                    storeId: widget.store.id,
+                  );
                 }
               },
               tooltip: 'Edit',

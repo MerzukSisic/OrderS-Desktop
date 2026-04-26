@@ -25,8 +25,8 @@ class Accompaniment {
       extraCharge: (json['extraCharge'] as num?)?.toDouble() ?? 0.0,
       isAvailable: json['isAvailable'] ?? true,
       displayOrder: json['displayOrder'] ?? 0,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
           : null,
     );
   }

@@ -239,30 +239,48 @@ class _UsersListScreenState extends State<UsersListScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: DropdownButton<String?>(
-              value: _roleFilter,
-              hint: const Text('All Roles'),
-              underline: const SizedBox(),
-              items: [
-                const DropdownMenuItem(value: null, child: Text('All Roles')),
-                const DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-                const DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
-                const DropdownMenuItem(
-                  value: 'Bartender',
-                  child: Text('Bartender'),
+          SizedBox(
+            width: 150,
+            height: 48,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String?>(
+                    value: _roleFilter,
+                    hint: const Text(
+                      'All Roles',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    isExpanded: true,
+                    dropdownColor: AppColors.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    iconEnabledColor: AppColors.textSecondary,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: null, child: Text('All Roles')),
+                      DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+                      DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
+                      DropdownMenuItem(
+                        value: 'Bartender',
+                        child: Text('Bartender'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() => _roleFilter = value);
+                      _applyFilters();
+                    },
+                  ),
                 ),
-              ],
-              onChanged: (value) {
-                setState(() => _roleFilter = value);
-                _applyFilters();
-              },
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -302,7 +320,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(
-          backgroundColor: _getRoleColor(user.role).withOpacity(0.2),
+          backgroundColor: _getRoleColor(user.role).withValues(alpha: 0.2),
           child: Text(
             user.fullName.substring(0, 1).toUpperCase(),
             style: TextStyle(
@@ -390,7 +408,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _getRoleColor(role).withOpacity(0.2),
+        color: _getRoleColor(role).withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -409,8 +427,8 @@ class _UsersListScreenState extends State<UsersListScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isActive
-            ? AppColors.success.withOpacity(0.2)
-            : AppColors.error.withOpacity(0.2),
+            ? AppColors.success.withValues(alpha: 0.2)
+            : AppColors.error.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

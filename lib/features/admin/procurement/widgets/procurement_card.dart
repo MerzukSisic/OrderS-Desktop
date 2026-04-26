@@ -7,11 +7,7 @@ class ProcurementCard extends StatelessWidget {
   final dynamic order;
   final VoidCallback onTap;
 
-  const ProcurementCard({
-    super.key,
-    required this.order,
-    required this.onTap,
-  });
+  const ProcurementCard({super.key, required this.order, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +62,11 @@ class ProcurementCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         DateFormat('MMM dd, yyyy').format(order.orderDate),
@@ -76,7 +76,11 @@ class ProcurementCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Icon(Icons.shopping_cart, size: 14, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.shopping_cart,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${order.items.length} items',
@@ -87,7 +91,11 @@ class ProcurementCard extends StatelessWidget {
                       ),
                       if (order.deliveryDate != null) ...[
                         const SizedBox(width: 16),
-                        Icon(Icons.local_shipping, size: 14, color: AppColors.textSecondary),
+                        Icon(
+                          Icons.local_shipping,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Delivery: ${DateFormat('MMM dd').format(order.deliveryDate!)}',
@@ -115,8 +123,10 @@ class ProcurementCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                      .format(order.totalAmount),
+                  NumberFormat.currency(
+                    symbol: 'KM ',
+                    decimalDigits: 2,
+                  ).format(order.totalAmount),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -137,14 +147,10 @@ class ProcurementCard extends StatelessWidget {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: _getStatusColor().withOpacity(0.1),
+        color: _getStatusColor().withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        _getStatusIcon(),
-        color: _getStatusColor(),
-        size: 28,
-      ),
+      child: Icon(_getStatusIcon(), color: _getStatusColor(), size: 28),
     );
   }
 
@@ -152,7 +158,7 @@ class ProcurementCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _getStatusColor().withOpacity(0.1),
+        color: _getStatusColor().withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

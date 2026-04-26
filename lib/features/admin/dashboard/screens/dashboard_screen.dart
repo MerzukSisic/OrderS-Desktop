@@ -5,6 +5,8 @@ import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/revenue_chart_widget.dart';
 import 'package:rs2_desktop/features/admin/dashboard/widget/stat_card.dart';
+import 'package:rs2_desktop/models/statistics/dashboard_stats.dart';
+import 'package:rs2_desktop/models/statistics/revenue_chart.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/providers/notifications_recommendations_providers.dart';
 import 'package:intl/intl.dart';
@@ -253,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatsGrid(stats) {
+  Widget _buildStatsGrid(DashboardStats stats) {
     final avgOrderValue = stats.todayOrders > 0
         ? stats.todayRevenue / stats.todayOrders
         : 0.0;
@@ -314,7 +316,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildRevenueChart(revenueChart) {
+  Widget _buildRevenueChart(RevenueChart revenueChart) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -338,7 +340,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -431,7 +433,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: _getProductColor(index).withOpacity(0.1),
+                        color: _getProductColor(index).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(

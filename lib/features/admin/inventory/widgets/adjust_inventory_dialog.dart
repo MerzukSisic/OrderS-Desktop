@@ -7,10 +7,7 @@ import 'package:rs2_desktop/providers/business_providers.dart';
 class AdjustInventoryDialog extends StatefulWidget {
   final dynamic product;
 
-  const AdjustInventoryDialog({
-    super.key,
-    required this.product,
-  });
+  const AdjustInventoryDialog({super.key, required this.product});
 
   @override
   State<AdjustInventoryDialog> createState() => _AdjustInventoryDialogState();
@@ -20,7 +17,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _reasonController = TextEditingController();
-  
+
   String _adjustmentType = 'addition'; // addition, subtraction, adjustment
   bool _isLoading = false;
 
@@ -35,9 +32,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: 500,
         padding: const EdgeInsets.all(24),
@@ -64,7 +59,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.edit, color: AppColors.primary, size: 24),
@@ -76,18 +71,12 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
             children: [
               const Text(
                 'Adjust Inventory',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
                 widget.product.name,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -118,10 +107,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
             children: [
               Text(
                 'Current Stock',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 4),
               Text(
@@ -138,10 +124,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
             children: [
               Text(
                 'Minimum Stock',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 4),
               Text(
@@ -189,9 +172,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
               ),
             ),
             keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter quantity';
@@ -200,7 +181,8 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
               if (quantity == null || quantity <= 0) {
                 return 'Please enter valid quantity';
               }
-              if (_adjustmentType == 'subtraction' && quantity > widget.product.currentStock) {
+              if (_adjustmentType == 'subtraction' &&
+                  quantity > widget.product.currentStock) {
                 return 'Cannot subtract more than current stock';
               }
               return null;
@@ -265,7 +247,12 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
     );
   }
 
-  Widget _buildTypeButton(String label, String type, IconData icon, Color color) {
+  Widget _buildTypeButton(
+    String label,
+    String type,
+    IconData icon,
+    Color color,
+  ) {
     final isSelected = _adjustmentType == type;
 
     return InkWell(
@@ -277,7 +264,9 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : AppColors.surfaceVariant,
+          color: isSelected
+              ? color.withValues(alpha: 0.1)
+              : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? color : AppColors.border,
@@ -371,11 +360,11 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
       }
 
       final success = await context.read<InventoryProvider>().adjustInventory(
-            storeProductId: widget.product.id,
-            quantityChange: quantityChange,
-            type: type,
-            reason: _reasonController.text,
-          );
+        storeProductId: widget.product.id,
+        quantityChange: quantityChange,
+        type: type,
+        reason: _reasonController.text,
+      );
 
       if (!mounted) return;
 
@@ -391,7 +380,8 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.read<InventoryProvider>().error ?? 'Failed to adjust inventory',
+              context.read<InventoryProvider>().error ??
+                  'Failed to adjust inventory',
             ),
             backgroundColor: AppColors.error,
           ),
@@ -400,10 +390,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
       );
     } finally {
       if (mounted) {

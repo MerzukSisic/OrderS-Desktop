@@ -309,7 +309,9 @@ class PaymentsProvider with ChangeNotifier {
 
       if (response.success && response.data != null) {
         _currentPaymentIntent = response.data;
-        debugPrint('✅ Payment Intent Created: ${response.data}');
+        if (kDebugMode) {
+          debugPrint('Payment intent created');
+        }
         return response.data;
       } else {
         _setError(response.error ?? 'Failed to create payment intent');
@@ -364,7 +366,9 @@ class PaymentsProvider with ChangeNotifier {
       final response = await _apiService.confirmPayment(paymentIntentId);
 
       if (response.success && response.data == true) {
-        debugPrint('✅ Payment Confirmed: $paymentIntentId');
+        if (kDebugMode) {
+          debugPrint('Payment confirmed');
+        }
         return true;
       } else {
         _setError(response.error ?? 'Payment confirmation failed');
@@ -394,7 +398,9 @@ class PaymentsProvider with ChangeNotifier {
       if (response.success && response.data == true) {
         _currentPaymentIntent = null;
         notifyListeners();
-        debugPrint('✅ Payment Intent Cancelled: $paymentIntentId');
+        if (kDebugMode) {
+          debugPrint('Payment intent cancelled');
+        }
         return true;
       } else {
         _setError(response.error ?? 'Payment cancellation failed');
@@ -429,7 +435,9 @@ class PaymentsProvider with ChangeNotifier {
       );
 
       if (response.success && response.data != null) {
-        debugPrint('✅ Refund Created: ${response.data}');
+        if (kDebugMode) {
+          debugPrint('Refund created');
+        }
         return response.data;
       } else {
         _setError(response.error ?? 'Failed to create refund');

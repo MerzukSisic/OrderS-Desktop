@@ -39,12 +39,14 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
     setState(() => _isSubmitting = true);
 
     final success = await context.read<UsersProvider>().createUser(
-          fullName: _fullNameController.text.trim(),
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          role: _selectedRole,
-          phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        );
+      fullName: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      role: _selectedRole,
+      phoneNumber: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
+    );
 
     if (mounted) {
       setState(() => _isSubmitting = false);
@@ -192,7 +194,7 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
 
           // Role
           DropdownButtonFormField<String>(
-            value: _selectedRole,
+            initialValue: _selectedRole,
             decoration: InputDecoration(
               labelText: 'Role *',
               prefixIcon: const Icon(Icons.badge),
@@ -230,7 +232,9 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
               hintText: 'Enter password',
               prefixIcon: const Icon(Icons.lock),
               suffixIcon: IconButton(
-                icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                ),
                 onPressed: () {
                   setState(() => _obscurePassword = !_obscurePassword);
                 },
@@ -260,9 +264,15 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
               hintText: 'Re-enter password',
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
-                icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                ),
                 onPressed: () {
-                  setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                  setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  );
                 },
               ),
               border: OutlineInputBorder(

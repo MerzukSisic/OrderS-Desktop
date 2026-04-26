@@ -30,8 +30,8 @@ class InventoryCard extends StatelessWidget {
           color: product.currentStock == 0
               ? AppColors.error
               : product.isLowStock
-                  ? AppColors.warning
-                  : AppColors.border,
+              ? AppColors.warning
+              : AppColors.border,
           width: 1,
         ),
       ),
@@ -125,8 +125,10 @@ class InventoryCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          NumberFormat.currency(symbol: 'KM ', decimalDigits: 2)
-                              .format(product.purchasePrice),
+                          NumberFormat.currency(
+                            symbol: 'KM ',
+                            decimalDigits: 2,
+                          ).format(product.purchasePrice),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -147,10 +149,10 @@ class InventoryCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          DateFormat('MMM dd, yyyy').format(product.lastRestocked),
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
+                          DateFormat(
+                            'MMM dd, yyyy',
+                          ).format(product.lastRestocked),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ],
                     ),
@@ -169,7 +171,10 @@ class InventoryCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -180,7 +185,10 @@ class InventoryCard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -195,7 +203,7 @@ class InventoryCard extends StatelessWidget {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: _getStockColor().withOpacity(0.1),
+        color: _getStockColor().withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -205,8 +213,8 @@ class InventoryCard extends StatelessWidget {
             product.currentStock == 0
                 ? Icons.remove_circle_outline
                 : product.isLowStock
-                    ? Icons.warning_amber
-                    : Icons.check_circle_outline,
+                ? Icons.warning_amber
+                : Icons.check_circle_outline,
             color: _getStockColor(),
             size: 24,
           ),
@@ -242,7 +250,7 @@ class InventoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

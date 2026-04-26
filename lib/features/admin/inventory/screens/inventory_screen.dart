@@ -11,6 +11,7 @@ import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_logs_dial
 import 'package:rs2_desktop/models/inventory/store_product_model.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
 import 'package:rs2_desktop/features/admin/inventory/widgets/inventory_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -58,7 +59,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
         header: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Inventory Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Inventory Report',
+              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            ),
             pw.Text('Generated: $now', style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 8),
             pw.Divider(),
@@ -66,17 +70,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
         ),
         build: (context) => [
           pw.TableHelper.fromTextArray(
-            headers: ['Product', 'Store', 'Stock', 'Min Stock', 'Unit', 'Purchase Price', 'Status'],
-            data: products.map((p) => [
-              p.name,
-              p.storeName,
-              p.currentStock.toString(),
-              p.minimumStock.toString(),
-              p.unit,
-              '\$${p.purchasePrice.toStringAsFixed(2)}',
-              p.isLowStock ? 'LOW STOCK' : (p.currentStock == 0 ? 'OUT OF STOCK' : 'OK'),
-            ]).toList(),
-            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+            headers: [
+              'Product',
+              'Store',
+              'Stock',
+              'Min Stock',
+              'Unit',
+              'Purchase Price',
+              'Status',
+            ],
+            data: products
+                .map(
+                  (p) => [
+                    p.name,
+                    p.storeName,
+                    p.currentStock.toString(),
+                    p.minimumStock.toString(),
+                    p.unit,
+                    '\$${p.purchasePrice.toStringAsFixed(2)}',
+                    p.isLowStock
+                        ? 'LOW STOCK'
+                        : (p.currentStock == 0 ? 'OUT OF STOCK' : 'OK'),
+                  ],
+                )
+                .toList(),
+            headerStyle: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 9,
+            ),
             cellStyle: const pw.TextStyle(fontSize: 9),
             cellAlignments: {
               0: pw.Alignment.centerLeft,
@@ -93,20 +114,28 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
 
     final bytes = await pdf.save();
-    final filePath = '${Directory.systemTemp.path}/inventory_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final filePath =
+        '${Directory.systemTemp.path}/inventory_${DateTime.now().millisecondsSinceEpoch}.pdf';
     await File(filePath).writeAsBytes(bytes);
-    await Process.run('open', [filePath]);
+    final opened = await launchUrl(Uri.file(filePath));
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the generated PDF file.')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<InventoryProvider, StoresProvider>(
       builder: (context, inventoryProvider, storesProvider, child) {
-        if (inventoryProvider.isLoading && inventoryProvider.storeProducts.isEmpty) {
+        if (inventoryProvider.isLoading &&
+            inventoryProvider.storeProducts.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (inventoryProvider.error != null && inventoryProvider.storeProducts.isEmpty) {
+        if (inventoryProvider.error != null &&
+            inventoryProvider.storeProducts.isEmpty) {
           return _buildError(inventoryProvider.error!);
         }
 
@@ -124,17 +153,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const SizedBox(height: 16),
           Text(error, style: TextStyle(color: AppColors.error)),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
   }
 
-  Widget _buildContent(InventoryProvider inventoryProvider, StoresProvider storesProvider) {
-    final filteredProducts = _getFilteredProducts(inventoryProvider.storeProducts);
+  Widget _buildContent(
+    InventoryProvider inventoryProvider,
+    StoresProvider storesProvider,
+  ) {
+    final filteredProducts = _getFilteredProducts(
+      inventoryProvider.storeProducts,
+    );
 
     return Column(
       children: [
@@ -151,7 +182,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Widget _buildHeader(InventoryProvider inventoryProvider, StoresProvider storesProvider) {
+  Widget _buildHeader(
+    InventoryProvider inventoryProvider,
+    StoresProvider storesProvider,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -169,10 +203,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 children: [
                   const Text(
                     'Inventory Management',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -190,12 +221,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     _buildStoreFilter(storesProvider),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
-                    onPressed: () => _exportInventoryPdf(inventoryProvider.storeProducts),
+                    onPressed: () =>
+                        _exportInventoryPdf(inventoryProvider.storeProducts),
                     icon: const Icon(Icons.picture_as_pdf, size: 18),
                     label: const Text('Export PDF'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -247,7 +282,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget _buildStatsCards(InventoryProvider provider) {
     final totalProducts = provider.storeProducts.length;
     final lowStockCount = provider.lowStockProducts.length;
-    final outOfStockCount = provider.storeProducts.where((p) => p.currentStock == 0).length;
+    final outOfStockCount = provider.storeProducts
+        .where((p) => p.currentStock == 0)
+        .length;
     final totalValue = provider.totalStockValue ?? 0.0;
 
     return Row(
@@ -282,7 +319,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
         Expanded(
           child: _buildStatCard(
             'Total Value',
-            NumberFormat.currency(symbol: 'KM ', decimalDigits: 2).format(totalValue),
+            NumberFormat.currency(
+              symbol: 'KM ',
+              decimalDigits: 2,
+            ).format(totalValue),
             Icons.attach_money,
             Colors.green,
           ),
@@ -291,7 +331,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -304,7 +349,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -369,7 +414,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const SizedBox(width: 16),
           _buildFilterChip('All', 'all', provider.storeProducts.length),
           const SizedBox(width: 8),
-          _buildFilterChip('Low Stock', 'low_stock', provider.lowStockProducts.length),
+          _buildFilterChip(
+            'Low Stock',
+            'low_stock',
+            provider.lowStockProducts.length,
+          ),
           const SizedBox(width: 8),
           _buildFilterChip(
             'Out of Stock',
@@ -393,9 +442,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
         });
       },
       backgroundColor: AppColors.surface,
-      selectedColor: AppColors.primary.withOpacity(0.2),
+      selectedColor: AppColors.primary.withValues(alpha: 0.2),
       checkmarkColor: AppColors.primary,
-      side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.border,
+      ),
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primary : AppColors.textPrimary,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -408,7 +459,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     // Apply filter
     if (_selectedFilter == 'low_stock') {
-      filtered = products.where((p) => p.isLowStock && p.currentStock > 0).toList();
+      filtered = products
+          .where((p) => p.isLowStock && p.currentStock > 0)
+          .toList();
     } else if (_selectedFilter == 'out_of_stock') {
       filtered = products.where((p) => p.currentStock == 0).toList();
     }
@@ -433,20 +486,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const SizedBox(height: 16),
           Text(
             'No products found',
-            style: TextStyle(
-              fontSize: 18,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 18, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             _searchQuery.isNotEmpty
                 ? 'Try adjusting your search'
                 : 'No inventory items to display',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -474,14 +521,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  void _showAdjustDialog(product) {
+  void _showAdjustDialog(StoreProductModel product) {
     showDialog(
       context: context,
       builder: (context) => AdjustInventoryDialog(product: product),
     );
   }
 
-  void _showLogsDialog(product) {
+  void _showLogsDialog(StoreProductModel product) {
     showDialog(
       context: context,
       builder: (context) => InventoryLogsDialog(productId: product.id),

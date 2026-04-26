@@ -177,7 +177,9 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                               '${provider.categories.length} categories',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary.withValues(alpha: 0.7),
+                                color: AppColors.textSecondary.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                             );
                           },
@@ -188,7 +190,10 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                   // Add Button
                   ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRouter.adminCategoryCreate);
+                      Navigator.pushNamed(
+                        context,
+                        AppRouter.adminCategoryCreate,
+                      );
                     },
                     icon: const Icon(Icons.add, size: 20),
                     label: const Text('Add Category'),
@@ -221,10 +226,17 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                         hintStyle: TextStyle(
                           color: AppColors.textSecondary.withValues(alpha: 0.5),
                         ),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.primary,
+                        ),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(Icons.clear, size: 20, color: AppColors.textSecondary),
+                                icon: const Icon(
+                                  Icons.clear,
+                                  size: 20,
+                                  color: AppColors.textSecondary,
+                                ),
                                 onPressed: () {
                                   _searchController.clear();
                                   setState(() {});
@@ -239,7 +251,10 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -251,7 +266,10 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+                      icon: const Icon(
+                        Icons.refresh,
+                        color: AppColors.textSecondary,
+                      ),
                       onPressed: () {
                         context.read<CategoriesProvider>().fetchCategories();
                       },
@@ -263,7 +281,7 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
             ],
           ),
         ),
-        
+
         // Categories Grid
         Expanded(
           child: Consumer<CategoriesProvider>(
@@ -287,7 +305,10 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                       const SizedBox(height: 16),
                       Text(
                         provider.error!,
-                        style: const TextStyle(color: AppColors.error, fontSize: 16),
+                        style: const TextStyle(
+                          color: AppColors.error,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
@@ -300,7 +321,9 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                 );
               }
 
-              final filteredCategories = _getFilteredCategories(provider.categories);
+              final filteredCategories = _getFilteredCategories(
+                provider.categories,
+              );
 
               if (filteredCategories.isEmpty) {
                 return Center(
@@ -378,7 +401,9 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                     AppColors.primary.withValues(alpha: 0.05),
                   ],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               child: Center(
                 child: Icon(
@@ -454,8 +479,12 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
                     label: const Text('Edit'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide(
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                   ),
@@ -483,15 +512,22 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
   IconData _getCategoryIcon(String name) {
     final lowercaseName = name.toLowerCase();
-    if (lowercaseName.contains('food') || lowercaseName.contains('jelo') || lowercaseName.contains('hrana')) {
+    if (lowercaseName.contains('food') ||
+        lowercaseName.contains('jelo') ||
+        lowercaseName.contains('hrana')) {
       return Icons.restaurant;
-    } else if (lowercaseName.contains('drink') || lowercaseName.contains('piće') || lowercaseName.contains('pice')) {
+    } else if (lowercaseName.contains('drink') ||
+        lowercaseName.contains('piće') ||
+        lowercaseName.contains('pice')) {
       return Icons.local_bar;
-    } else if (lowercaseName.contains('coffee') || lowercaseName.contains('kafa')) {
+    } else if (lowercaseName.contains('coffee') ||
+        lowercaseName.contains('kafa')) {
       return Icons.coffee;
-    } else if (lowercaseName.contains('dessert') || lowercaseName.contains('desert')) {
+    } else if (lowercaseName.contains('dessert') ||
+        lowercaseName.contains('desert')) {
       return Icons.cake;
-    } else if (lowercaseName.contains('breakfast') || lowercaseName.contains('doručak')) {
+    } else if (lowercaseName.contains('breakfast') ||
+        lowercaseName.contains('doručak')) {
       return Icons.free_breakfast;
     }
     return Icons.category;

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/services/api/common_api_services.dart';
 import 'package:rs2_desktop/models/products/category_model.dart';
 
-
 class CategoriesProvider with ChangeNotifier {
   final CategoriesApiService _apiService = CategoriesApiService();
 

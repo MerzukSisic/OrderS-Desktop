@@ -30,16 +30,23 @@ class Store extends Equatable {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'address': location,
-        'isActive': isActive,
-        'isExternal': isExternal,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'address': location,
+    'isActive': isActive,
+    'isExternal': isExternal,
+  };
 
   @override
-  List<Object?> get props => [id, name, description, location, isActive, isExternal];
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    location,
+    isActive,
+    isExternal,
+  ];
 }
 
 // Store Product DTO (for inventory management)
@@ -87,18 +94,18 @@ class StoreProductItem extends Equatable {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'storeId': storeId,
-        'storeName': storeName,
-        'name': name,
-        'description': description,
-        'purchasePrice': purchasePrice,
-        'currentStock': currentStock,
-        'minimumStock': minimumStock,
-        'unit': unit,
-        'isLowStock': isLowStock,
-        'lastRestocked': lastRestocked.toIso8601String(),
-      };
+    'id': id,
+    'storeId': storeId,
+    'storeName': storeName,
+    'name': name,
+    'description': description,
+    'purchasePrice': purchasePrice,
+    'currentStock': currentStock,
+    'minimumStock': minimumStock,
+    'unit': unit,
+    'isLowStock': isLowStock,
+    'lastRestocked': lastRestocked.toIso8601String(),
+  };
 
   // Helper: Get stock percentage
   double get stockPercentage {
@@ -115,16 +122,16 @@ class StoreProductItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        storeId,
-        storeName,
-        name,
-        description,
-        purchasePrice,
-        currentStock,
-        minimumStock,
-        unit,
-        isLowStock,
-        lastRestocked,
-      ];
+    id,
+    storeId,
+    storeName,
+    name,
+    description,
+    purchasePrice,
+    currentStock,
+    minimumStock,
+    unit,
+    isLowStock,
+    lastRestocked,
+  ];
 }

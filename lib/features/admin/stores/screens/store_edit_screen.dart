@@ -29,12 +29,16 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.store.name);
-    _addressController = TextEditingController(text: widget.store.location ?? '');
+    _addressController = TextEditingController(
+      text: widget.store.location ?? '',
+    );
     _phoneController = TextEditingController();
     _isExternal = widget.store.isExternal;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<InventoryProvider>().fetchStoreProducts(storeId: widget.store.id);
+        context.read<InventoryProvider>().fetchStoreProducts(
+          storeId: widget.store.id,
+        );
       }
     });
   }
@@ -53,12 +57,18 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     setState(() => _isSaving = true);
     try {
       final success = await context.read<StoresProvider>().updateStore(
-            widget.store.id,
-            name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
-            address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
-            phoneNumber: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-            isExternal: _isExternal,
-          );
+        widget.store.id,
+        name: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+        phoneNumber: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        isExternal: _isExternal,
+      );
       if (!mounted) return;
       if (success) {
         _showSnackBar('Store updated successfully', AppColors.success);
@@ -73,12 +83,14 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
   }
 
   void _showSnackBar(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: color,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   void _showDeleteProductDialog(StoreProductModel product) {
@@ -87,17 +99,25 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Product', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(
+          'Delete Product',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: Text(
           'Delete "${product.name}"? This cannot be undone.',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final success = await context.read<InventoryProvider>().deleteStoreProduct(product.id);
+              final success = await context
+                  .read<InventoryProvider>()
+                  .deleteStoreProduct(product.id);
               if (mounted) {
                 _showSnackBar(
                   success ? 'Product deleted' : 'Failed to delete product',
@@ -105,7 +125,10 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -126,7 +149,11 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         ),
         title: Text(
           'Edit ${widget.store.name}',
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -143,21 +170,27 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionTitle('Store Information', Icons.store_outlined),
+                        _buildSectionTitle(
+                          'Store Information',
+                          Icons.store_outlined,
+                        ),
                         const SizedBox(height: 24),
                         _buildTextField(
                           controller: _nameController,
                           label: 'Store Name *',
                           hint: 'e.g. Main Warehouse',
                           icon: Icons.store_outlined,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                          validator: (v) =>
+                              (v == null || v.isEmpty) ? 'Required' : null,
                         ),
                         const SizedBox(height: 20),
                         _buildTextField(
@@ -176,32 +209,51 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                         ),
                         const SizedBox(height: 20),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceVariant,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.business_outlined, color: AppColors.primary, size: 20),
+                              Icon(
+                                Icons.business_outlined,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('External supplier', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                                    const Text(
+                                      'External supplier',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
                                     Text(
                                       _isExternal
                                           ? 'This is an external supplier (not your own location)'
                                           : 'This is your own internal store/warehouse',
-                                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary
+                                            .withValues(alpha: 0.7),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                               Switch(
                                 value: _isExternal,
-                                onChanged: (v) => setState(() => _isExternal = v),
+                                onChanged: (v) =>
+                                    setState(() => _isExternal = v),
                                 activeThumbColor: AppColors.primary,
                               ),
                             ],
@@ -212,26 +264,56 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             OutlinedButton(
-                              onPressed: _isSaving ? null : () => Navigator.pop(context),
+                              onPressed: _isSaving
+                                  ? null
+                                  : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                                side: BorderSide(
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 16),
                             ElevatedButton.icon(
                               onPressed: _isSaving ? null : _handleSave,
                               icon: _isSaving
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
                                   : const Icon(Icons.save),
-                              label: Text(_isSaving ? 'Saving...' : 'Save Changes'),
+                              label: Text(
+                                _isSaving ? 'Saving...' : 'Save Changes',
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 elevation: 0,
                               ),
                             ),
@@ -250,26 +332,38 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Expanded(child: _buildSectionTitle('Store Products', Icons.inventory_2_outlined)),
+                          Expanded(
+                            child: _buildSectionTitle(
+                              'Store Products',
+                              Icons.inventory_2_outlined,
+                            ),
+                          ),
                           ElevatedButton.icon(
                             onPressed: () async {
-                              final invProvider = context.read<InventoryProvider>();
+                              final invProvider = context
+                                  .read<InventoryProvider>();
                               await showDialog(
                                 context: context,
                                 builder: (_) => AddStoreProductDialog(
                                   store: widget.store,
                                   existingNames: invProvider.storeProducts
-                                      .where((p) => p.storeId == widget.store.id)
+                                      .where(
+                                        (p) => p.storeId == widget.store.id,
+                                      )
                                       .map((p) => p.name.toLowerCase())
                                       .toSet(),
-                                  onAdded: () => invProvider.fetchStoreProducts(storeId: widget.store.id),
+                                  onAdded: () => invProvider.fetchStoreProducts(
+                                    storeId: widget.store.id,
+                                  ),
                                 ),
                               );
                             },
@@ -278,8 +372,13 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                               elevation: 0,
                             ),
                           ),
@@ -292,7 +391,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(32),
-                                child: CircularProgressIndicator(color: AppColors.primary),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             );
                           }
@@ -311,11 +412,20 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                               child: Center(
                                 child: Column(
                                   children: [
-                                    Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                                    Icon(
+                                      Icons.inventory_2_outlined,
+                                      size: 48,
+                                      color: AppColors.textSecondary.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
                                     const SizedBox(height: 12),
                                     Text(
                                       'No products yet. Add the first one.',
-                                      style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.6)),
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary
+                                            .withValues(alpha: 0.6),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -324,7 +434,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                           }
 
                           return Column(
-                            children: products.map((product) => _buildProductRow(product)).toList(),
+                            children: products
+                                .map((product) => _buildProductRow(product))
+                                .toList(),
                           );
                         },
                       ),
@@ -350,7 +462,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isLow ? AppColors.warning.withValues(alpha: 0.4) : Colors.transparent,
+          color: isLow
+              ? AppColors.warning.withValues(alpha: 0.4)
+              : Colors.transparent,
         ),
       ),
       child: Row(
@@ -359,7 +473,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isLow ? AppColors.warning : AppColors.primary).withValues(alpha: 0.15),
+              color: (isLow ? AppColors.warning : AppColors.primary).withValues(
+                alpha: 0.15,
+              ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -377,17 +493,30 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                   children: [
                     Text(
                       product.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     if (isLow) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.warning.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text('Low Stock', style: TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Low Stock',
+                          style: TextStyle(
+                            color: AppColors.warning,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ],
@@ -395,7 +524,10 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                 const SizedBox(height: 2),
                 Text(
                   '${product.currentStock} / min ${product.minimumStock} ${product.unit}  ·  ${product.purchasePrice.toStringAsFixed(2)} KM',
-                  style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 12),
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -431,13 +563,25 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: 12),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: Divider(color: AppColors.primary.withValues(alpha: 0.2))),
+        Expanded(
+          child: Divider(color: AppColors.primary.withValues(alpha: 0.2)),
+        ),
       ],
     );
   }
@@ -454,7 +598,14 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -464,13 +615,24 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             prefixIcon: Icon(icon, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceVariant,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.error)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error),
+            ),
           ),
         ),
       ],
