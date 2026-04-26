@@ -35,6 +35,8 @@ migrate_working_dir/
 .env
 .env.*
 !.env*.zip
+fit_env/
+fit-build-*.zip
 
 # Symbolication related
 app.*.symbols
