@@ -11,7 +11,8 @@
 3. [Pokretanje aplikacije](#pokretanje-aplikacije)
 4. [Login podaci](#login-podaci)
 5. [Build Windows EXE](#build-windows-exe)
-6. [Struktura projekta](#struktura-projekta)
+6. [Predaja putem GitHub Release-a](#predaja-putem-github-release-a)
+7. [Struktura projekta](#struktura-projekta)
 
 ---
 
@@ -113,7 +114,7 @@ flutter run -d windows ^
 ### Pokretanje prebuilt EXE-a:
 ```bash
 # Ekstraktovati build arhivu (šifra: fit)
-7z x fit-build-2026-04-26.zip
+7z x fit-build-2026-04-28.zip
 
 # Pokrenuti aplikaciju
 cd build/windows/x64/runner/Release/
@@ -144,7 +145,33 @@ flutter build windows --release ^
 
 **Lokacija outputa:** `build/windows/x64/runner/Release/`
 
-Build arhivu za predaju kreirati kroz GitHub Release, npr. `fit-build-2026-04-26.zip`. U release ne postavljati `.env`; konfiguracijske tajne držati u šifrovanoj ZIP arhivi, npr. `fit_env.zip`.
+Build fajlove arhivirati iz foldera `build/windows/x64/runner/Release/` u ZIP arhivu za predaju, npr. `fit-build-2026-04-28.zip`. U build arhivu i GitHub Release ne postavljati `.env`, `fit_env.zip` niti druge osjetljive konfiguracijske fajlove.
+
+---
+
+## Predaja putem GitHub Release-a
+
+Release za predaju se kreira kao immutable GitHub Release:
+
+1. Nakon uključivanja policy-ja za Immutable Release otvoriti sekciju **Releases** i odabrati **Draft a new release**.
+2. Release prvo kreirati kao draft.
+3. U polje za tag unijeti oznaku release-a, npr. `predaja-2026-04-28`.
+4. U polje **Release title** unijeti isti ili jasno prepoznatljiv naziv, npr. `predaja-2026-04-28`.
+5. U dio za binarne fajlove dodati ZIP arhivu sa build fajlovima, npr. `fit-build-2026-04-28.zip`.
+6. Provjeriti da je upload ZIP arhive završen.
+7. Tek nakon završenog upload-a kliknuti **Publish release**.
+
+GitHub automatski dodaje i arhive izvornog koda za taj release (`Source code.zip` i `Source code.tar.gz`). Nakon objave immutable release-a nije moguće mijenjati ili brisati release assete niti mijenjati povezani tag.
+
+Na DL sistem postaviti link na tačan GitHub Release, a ne link na glavni repozitorij niti `releases/latest`.
+
+Primjer linka za ovaj repozitorij:
+
+```text
+https://github.com/MerzukSisic/rs2-desktop/releases/tag/predaja-2026-04-28
+```
+
+Šifra za `.env` ZIP arhivu postavlja se na DL sistem. `.env` fajl i `.env` ZIP arhiva ne idu u GitHub Release.
 
 ---
 
@@ -168,8 +195,7 @@ rs2-desktop/
 │   │   ├── admin_sidebar.dart     # Persistent sidebar navigacija
 │   │   └── ...
 │   └── main.dart
-├── build/windows/x64/runner/Release/  # EXE output
-└── fit_env.zip                        # Konfiguracijski fajl (šifra: fit)
+└── build/windows/x64/runner/Release/  # EXE output
 ```
 
 ---
