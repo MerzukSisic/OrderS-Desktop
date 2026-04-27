@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/services/api/common_api_services.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/models/products/accompaniment_group.dart';
@@ -22,17 +23,22 @@ class UsersProvider with ChangeNotifier {
 
   /// Get waiters
   List<UserModel> get waiters {
-    return _users.where((u) => u.role == 'Waiter').toList();
+    return _users.where((u) => u.role == AppConstants.roleWaiter).toList();
   }
 
   /// Get admins
   List<UserModel> get admins {
-    return _users.where((u) => u.role == 'Admin').toList();
+    return _users.where((u) => u.role == AppConstants.roleAdmin).toList();
+  }
+
+  /// Get kitchen users
+  List<UserModel> get kitchenUsers {
+    return _users.where((u) => u.role == AppConstants.roleKitchen).toList();
   }
 
   /// Get bartenders
   List<UserModel> get bartenders {
-    return _users.where((u) => u.role == 'Bartender').toList();
+    return _users.where((u) => u.role == AppConstants.roleBartender).toList();
   }
 
   /// Get active users

@@ -6,7 +6,14 @@ class AppConstants {
   // Roles
   static const String roleAdmin = 'Admin';
   static const String roleWaiter = 'Waiter';
+  static const String roleKitchen = 'Kitchen';
   static const String roleBartender = 'Bartender';
+  static const List<String> userRoles = [
+    roleAdmin,
+    roleWaiter,
+    roleKitchen,
+    roleBartender,
+  ];
 
   // Order Types
   static const String orderTypeDineIn = 'DineIn';

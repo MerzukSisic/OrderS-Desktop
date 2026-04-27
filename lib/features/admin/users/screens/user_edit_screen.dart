@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
@@ -55,7 +56,9 @@ class _UserEditScreenState extends State<UserEditScreen> {
         _fullNameController.text = _user!.fullName;
         _emailController.text = _user!.email;
         _phoneController.text = _user!.phoneNumber ?? '';
-        _selectedRole = _user!.role;
+        _selectedRole = AppConstants.userRoles.contains(_user!.role)
+            ? _user!.role
+            : AppConstants.roleWaiter;
         _isActive = _user!.isActive;
       }
 
@@ -369,6 +372,8 @@ class _UserEditScreenState extends State<UserEditScreen> {
           // Role
           DropdownButtonFormField<String>(
             initialValue: _selectedRole,
+            dropdownColor: AppColors.surfaceVariant,
+            style: const TextStyle(color: AppColors.textPrimary),
             decoration: InputDecoration(
               labelText: 'Role *',
               prefixIcon: const Icon(Icons.badge),
@@ -376,11 +381,9 @@ class _UserEditScreenState extends State<UserEditScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            items: const [
-              DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-              DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
-              DropdownMenuItem(value: 'Bartender', child: Text('Bartender')),
-            ],
+            items: AppConstants.userRoles
+                .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() => _selectedRole = value);

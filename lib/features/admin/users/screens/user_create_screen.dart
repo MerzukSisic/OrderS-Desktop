@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
 
@@ -22,6 +23,16 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
   bool _isSubmitting = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _showPasswordHelp = false;
+
+  List<String> _passwordIssues(String value) {
+    return [
+      if (value.length < 8) 'At least 8 characters',
+      if (!RegExp(r'[A-Z]').hasMatch(value)) 'At least one uppercase letter',
+      if (!RegExp(r'[a-z]').hasMatch(value)) 'At least one lowercase letter',
+      if (!RegExp(r'\d').hasMatch(value)) 'At least one number',
+    ];
+  }
 
   @override
   void dispose() {
@@ -34,7 +45,9 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
   }
 
   Future<void> _handleSubmit() async {
+    setState(() => _showPasswordHelp = true);
     if (!_formKey.currentState!.validate()) return;
+    if (_passwordIssues(_passwordController.text).isNotEmpty) return;
 
     setState(() => _isSubmitting = true);
 
@@ -61,12 +74,16 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
         Navigator.pop(context);
       } else {
         final error = context.read<UsersProvider>().error;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Failed to create user'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        if (error != null && error.toLowerCase().contains('password')) {
+          setState(() => _showPasswordHelp = true);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error ?? 'Failed to create user'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     }
   }
@@ -98,6 +115,9 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
             constraints: const BoxConstraints(maxWidth: 600),
             child: Form(
               key: _formKey,
+              autovalidateMode: _showPasswordHelp
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -195,6 +215,8 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
           // Role
           DropdownButtonFormField<String>(
             initialValue: _selectedRole,
+            dropdownColor: AppColors.surfaceVariant,
+            style: const TextStyle(color: AppColors.textPrimary),
             decoration: InputDecoration(
               labelText: 'Role *',
               prefixIcon: const Icon(Icons.badge),
@@ -202,11 +224,9 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            items: const [
-              DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-              DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
-              DropdownMenuItem(value: 'Bartender', child: Text('Bartender')),
-            ],
+            items: AppConstants.userRoles
+                .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() => _selectedRole = value);
@@ -243,15 +263,34 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
+            onChanged: (_) {
+              if (_showPasswordHelp) setState(() {});
+            },
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Password is required';
               }
-              if (value.length < 6) {
-                return 'Password must be at least 6 characters';
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters';
+              }
+              if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                return 'Password must contain at least one uppercase letter';
+              }
+              if (!RegExp(r'[a-z]').hasMatch(value)) {
+                return 'Password must contain at least one lowercase letter';
+              }
+              if (!RegExp(r'\d').hasMatch(value)) {
+                return 'Password must contain at least one number';
               }
               return null;
             },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: _PasswordRequirements(
+              password: _passwordController.text,
+              visible: _showPasswordHelp || _passwordController.text.isNotEmpty,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -321,6 +360,60 @@ class _UserCreateScreenState extends State<UserCreateScreen> {
               : const Text('Create User'),
         ),
       ],
+    );
+  }
+}
+
+class _PasswordRequirements extends StatelessWidget {
+  final String password;
+  final bool visible;
+
+  const _PasswordRequirements({
+    required this.password,
+    required this.visible,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+
+    final items = [
+      ('At least 8 characters', password.length >= 8),
+      ('At least one uppercase letter', RegExp(r'[A-Z]').hasMatch(password)),
+      ('At least one lowercase letter', RegExp(r'[a-z]').hasMatch(password)),
+      ('At least one number', RegExp(r'\d').hasMatch(password)),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items.map((item) {
+        final ok = item.$2;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Row(
+            children: [
+              Icon(
+                ok ? Icons.check_circle : Icons.cancel,
+                size: 14,
+                color: ok ? AppColors.success : AppColors.error,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  item.$1,
+                  style: TextStyle(
+                    color: ok
+                        ? AppColors.success
+                        : AppColors.error.withValues(alpha: 0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

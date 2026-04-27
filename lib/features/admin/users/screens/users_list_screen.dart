@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
 import 'package:rs2_desktop/providers/users_accompaniments_providers.dart';
@@ -265,13 +266,16 @@ class _UsersListScreenState extends State<UsersListScreen> {
                       color: AppColors.textPrimary,
                       fontSize: 14,
                     ),
-                    items: const [
-                      DropdownMenuItem(value: null, child: Text('All Roles')),
-                      DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-                      DropdownMenuItem(value: 'Waiter', child: Text('Waiter')),
-                      DropdownMenuItem(
-                        value: 'Bartender',
-                        child: Text('Bartender'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('All Roles'),
+                      ),
+                      ...AppConstants.userRoles.map(
+                        (role) => DropdownMenuItem(
+                          value: role,
+                          child: Text(role),
+                        ),
                       ),
                     ],
                     onChanged: (value) {
@@ -475,6 +479,8 @@ class _UsersListScreenState extends State<UsersListScreen> {
         return AppColors.error;
       case 'waiter':
         return AppColors.primary;
+      case 'kitchen':
+        return AppColors.success;
       case 'bartender':
         return AppColors.warning;
       default:
