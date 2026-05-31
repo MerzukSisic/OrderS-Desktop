@@ -32,10 +32,10 @@ class AuthProvider with ChangeNotifier {
   bool get isWaiter => _currentUser?.role == AppConstants.roleWaiter;
   bool get isBartender => _currentUser?.role == AppConstants.roleBartender;
 
-  // Storage keys
-  static const String _tokenKey = 'auth_token';
+  // Storage keys - aligned with AppConstants and StorageService
+  static const String _tokenKey = AppConstants.keyAccessToken; // 'access_token'
   static const String _refreshTokenKey = 'refresh_token';
-  static const String _userKey = 'current_user';
+  static const String _userKey = AppConstants.keyUserData; // 'user_data'
 
   AuthProvider() {
     _apiClient.onUnauthorized = _handleUnauthorized;
