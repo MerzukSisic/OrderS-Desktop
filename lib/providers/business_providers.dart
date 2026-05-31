@@ -347,7 +347,7 @@ class InventoryProvider with ChangeNotifier {
   /// Adjust inventory
   Future<bool> adjustInventory({
     required String storeProductId,
-    required int quantityChange,
+    required double quantityChange,
     required String type,
     required String reason,
   }) async {
@@ -383,8 +383,8 @@ class InventoryProvider with ChangeNotifier {
     required String name,
     String? description,
     required double purchasePrice,
-    required int currentStock,
-    required int minimumStock,
+    required double currentStock,
+    required double minimumStock,
     required String unit,
   }) async {
     _setLoading(true);
@@ -423,8 +423,8 @@ class InventoryProvider with ChangeNotifier {
     String? name,
     String? description,
     double? purchasePrice,
-    int? currentStock,
-    int? minimumStock,
+    double? currentStock,
+    double? minimumStock,
     String? unit,
     String? storeId,
   }) async {
@@ -568,7 +568,7 @@ class StoresProvider with ChangeNotifier {
   Future<bool> createStore({
     required String name,
     String? address,
-    String? phoneNumber,
+    String? description,
     bool isExternal = false,
   }) async {
     _setLoading(true);
@@ -578,7 +578,7 @@ class StoresProvider with ChangeNotifier {
       final response = await _apiService.createStore(
         name: name,
         address: address,
-        phoneNumber: phoneNumber,
+        description: description,
         isExternal: isExternal,
       );
 
@@ -602,7 +602,7 @@ class StoresProvider with ChangeNotifier {
     String id, {
     String? name,
     String? address,
-    String? phoneNumber,
+    String? description,
     bool? isExternal,
   }) async {
     _setLoading(true);
@@ -613,7 +613,7 @@ class StoresProvider with ChangeNotifier {
         id,
         name: name,
         address: address,
-        phoneNumber: phoneNumber,
+        description: description,
         isExternal: isExternal,
       );
 

@@ -13,6 +13,7 @@ class CategoriesApiService {
   Future<ApiResponse<List<CategoryModel>>> getCategories() async {
     return await _client.get(
       '/categories',
+      queryParameters: const {'page': 1, 'pageSize': 100},
       fromJson: (json) =>
           (json as List).map((item) => CategoryModel.fromJson(item)).toList(),
     );
@@ -40,11 +41,11 @@ class CategoriesApiService {
   Future<ApiResponse<CategoryModel>> createCategory({
     required String name,
     String? description,
-    String? imageUrl,
+    String? iconName,
   }) async {
     return await _client.post(
       '/categories',
-      data: {'name': name, 'description': description, 'imageUrl': imageUrl},
+      data: {'name': name, 'description': description, 'iconName': iconName},
       fromJson: (json) => CategoryModel.fromJson(json),
     );
   }
@@ -54,14 +55,14 @@ class CategoriesApiService {
     String id, {
     String? name,
     String? description,
-    String? imageUrl,
+    String? iconName,
   }) async {
     return await _client.put(
       '/categories/$id',
       data: {
         if (name != null) 'name': name,
         if (description != null) 'description': description,
-        if (imageUrl != null) 'imageUrl': imageUrl,
+        if (iconName != null) 'iconName': iconName,
       },
     );
   }
@@ -81,7 +82,11 @@ class TablesApiService {
   Future<ApiResponse<List<TableModel>>> getTables({String? status}) async {
     return await _client.get(
       '/tables',
-      queryParameters: {if (status != null) 'status': status},
+      queryParameters: {
+        if (status != null) 'status': status,
+        'page': 1,
+        'pageSize': 100,
+      },
       fromJson: (json) =>
           (json as List).map((item) => TableModel.fromJson(item)).toList(),
     );
@@ -98,9 +103,12 @@ class TablesApiService {
   /// Get available tables
   Future<ApiResponse<List<TableModel>>> getAvailableTables() async {
     return await _client.get(
-      '/tables/available',
-      fromJson: (json) =>
-          (json as List).map((item) => TableModel.fromJson(item)).toList(),
+      '/tables',
+      queryParameters: const {'page': 1, 'pageSize': 100},
+      fromJson: (json) => (json as List)
+          .map((item) => TableModel.fromJson(item))
+          .where((table) => table.status == 'Available')
+          .toList(),
     );
   }
 
@@ -147,7 +155,7 @@ class TablesApiService {
   }) async {
     return await _client.put(
       '/tables/$tableId/status',
-      data: {'status': status},
+      queryParameters: {'status': status},
     );
   }
 
@@ -164,9 +172,18 @@ class UsersApiService {
 
   /// Get all users (Admin only)
   Future<ApiResponse<List<UserModel>>> getUsers({String? role}) async {
+    if (role != null && role.isNotEmpty) {
+      return await _client.get(
+        '/users/by-role/$role',
+        queryParameters: const {'page': 1, 'pageSize': 100},
+        fromJson: (json) =>
+            (json as List).map((item) => UserModel.fromJson(item)).toList(),
+      );
+    }
+
     return await _client.get(
       '/users',
-      queryParameters: {if (role != null) 'role': role},
+      queryParameters: const {'page': 1, 'pageSize': 100},
       fromJson: (json) =>
           (json as List).map((item) => UserModel.fromJson(item)).toList(),
     );
@@ -183,7 +200,8 @@ class UsersApiService {
   /// Get waiters
   Future<ApiResponse<List<UserModel>>> getWaiters() async {
     return await _client.get(
-      '/users/waiters',
+      '/users/by-role/Waiter',
+      queryParameters: const {'page': 1, 'pageSize': 100},
       fromJson: (json) =>
           (json as List).map((item) => UserModel.fromJson(item)).toList(),
     );
@@ -248,6 +266,7 @@ class AccompanimentsApiService {
   ) async {
     return await _client.get(
       '/accompaniments/product/$productId',
+      queryParameters: const {'page': 1, 'pageSize': 100},
       fromJson: (json) => (json as List)
           .map((item) => AccompanimentGroup.fromJson(item))
           .toList(),
@@ -258,6 +277,16 @@ class AccompanimentsApiService {
   Future<ApiResponse<AccompanimentGroup>> getGroupById(String id) async {
     return await _client.get(
       '/accompaniments/groups/$id',
+      fromJson: (json) => AccompanimentGroup.fromJson(json),
+    );
+  }
+
+  Future<ApiResponse<AccompanimentGroup>> createGroupFromPayload(
+    Map<String, dynamic> data,
+  ) async {
+    return await _client.post(
+      '/accompaniments/groups',
+      data: data,
       fromJson: (json) => AccompanimentGroup.fromJson(json),
     );
   }
@@ -287,6 +316,13 @@ class AccompanimentsApiService {
       },
       fromJson: (json) => AccompanimentGroup.fromJson(json),
     );
+  }
+
+  Future<ApiResponse<void>> updateGroupFromPayload(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    return await _client.put('/accompaniments/groups/$id', data: data);
   }
 
   /// Update accompaniment group (Admin only)
@@ -370,7 +406,7 @@ class AccompanimentsApiService {
   Future<ApiResponse<Map<String, dynamic>>> toggleAvailability(
     String id,
   ) async {
-    return await _client.put(
+    return await _client.patch(
       '/accompaniments/$id/toggle-availability',
       fromJson: (json) => json as Map<String, dynamic>,
     );

@@ -274,7 +274,12 @@ class _UsersListScreenState extends State<UsersListScreen> {
                       ...AppConstants.userRoles.map(
                         (role) => DropdownMenuItem(
                           value: role,
-                          child: Text(role),
+                          child: Text(
+                            role,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
                         ),
                       ),
                     ],

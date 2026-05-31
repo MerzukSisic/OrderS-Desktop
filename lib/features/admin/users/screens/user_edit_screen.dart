@@ -382,7 +382,15 @@ class _UserEditScreenState extends State<UserEditScreen> {
               ),
             ),
             items: AppConstants.userRoles
-                .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                .map(
+                  (role) => DropdownMenuItem(
+                    value: role,
+                    child: Text(
+                      role,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {
               if (value != null) {

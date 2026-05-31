@@ -22,7 +22,7 @@ class AuthApiService {
     required String fullName,
     required String email,
     required String password,
-    required String role,
+    String? role,
     String? phoneNumber,
   }) async {
     return await _client.post(
@@ -31,7 +31,6 @@ class AuthApiService {
         'fullName': fullName,
         'email': email,
         'password': password,
-        'role': role,
         'phoneNumber': phoneNumber,
       },
       fromJson: (json) => AuthResponse.fromJson(json),
@@ -82,6 +81,22 @@ class AuthApiService {
     return await _client.get(
       '/auth/me',
       fromJson: (json) => UserModel.fromJson(json),
+    );
+  }
+
+  /// Update own profile
+  Future<ApiResponse<void>> updateProfile({
+    required String fullName,
+    required String email,
+    String? phoneNumber,
+  }) async {
+    return await _client.put(
+      '/auth/me',
+      data: {
+        'fullName': fullName,
+        'email': email,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      },
     );
   }
 

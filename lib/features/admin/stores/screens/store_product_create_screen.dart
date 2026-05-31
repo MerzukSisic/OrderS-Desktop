@@ -41,8 +41,12 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
     final purchasePrice = double.tryParse(
       _purchasePriceController.text.trim().replaceAll(',', '.'),
     );
-    final currentStock = int.tryParse(_currentStockController.text.trim());
-    final minimumStock = int.tryParse(_minimumStockController.text.trim());
+    final currentStock = double.tryParse(
+      _currentStockController.text.trim().replaceAll(',', '.'),
+    );
+    final minimumStock = double.tryParse(
+      _minimumStockController.text.trim().replaceAll(',', '.'),
+    );
 
     if (purchasePrice == null) {
       _showError('Invalid purchase price');
@@ -228,13 +232,13 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             label: 'Current Stock *',
                             hint: 'e.g. 50',
                             icon: Icons.storage_outlined,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (int.tryParse(v) == null) {
+                              if (double.tryParse(v.replaceAll(',', '.')) ==
+                                  null) {
                                 return 'Must be a number';
                               }
                               return null;
@@ -248,13 +252,13 @@ class _StoreProductCreateScreenState extends State<StoreProductCreateScreen> {
                             label: 'Minimum Stock *',
                             hint: 'e.g. 10',
                             icon: Icons.warning_amber_outlined,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Required';
-                              if (int.tryParse(v) == null) {
+                              if (double.tryParse(v.replaceAll(',', '.')) ==
+                                  null) {
                                 return 'Must be a number';
                               }
                               return null;

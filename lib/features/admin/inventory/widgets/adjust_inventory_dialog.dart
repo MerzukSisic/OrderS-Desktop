@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rs2_desktop/core/theme/app_colors.dart';
 import 'package:rs2_desktop/providers/business_providers.dart';
@@ -171,13 +170,12 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
                 borderSide: BorderSide(color: AppColors.border),
               ),
             ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter quantity';
               }
-              final quantity = int.tryParse(value);
+              final quantity = double.tryParse(value.replaceAll(',', '.'));
               if (quantity == null || quantity <= 0) {
                 return 'Please enter valid quantity';
               }
@@ -337,8 +335,10 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
     });
 
     try {
-      final quantity = int.parse(_quantityController.text);
-      int quantityChange;
+      final quantity = double.parse(
+        _quantityController.text.trim().replaceAll(',', '.'),
+      );
+      double quantityChange;
       String type;
 
       switch (_adjustmentType) {
@@ -351,7 +351,7 @@ class _AdjustInventoryDialogState extends State<AdjustInventoryDialog> {
           type = 'Subtraction';
           break;
         case 'adjustment':
-          quantityChange = (quantity - widget.product.currentStock).toInt();
+          quantityChange = quantity - widget.product.currentStock;
           type = 'Adjustment';
           break;
         default:

@@ -14,7 +14,7 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool _isExternal = false;
   bool _isSaving = false;
 
@@ -22,7 +22,7 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _phoneController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -36,9 +36,9 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
         address: _addressController.text.trim().isEmpty
             ? null
             : _addressController.text.trim(),
-        phoneNumber: _phoneController.text.trim().isEmpty
+        description: _descriptionController.text.trim().isEmpty
             ? null
-            : _phoneController.text.trim(),
+            : _descriptionController.text.trim(),
         isExternal: _isExternal,
       );
       if (!mounted) return;
@@ -149,11 +149,10 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
-                      controller: _phoneController,
-                      label: 'Phone (optional)',
-                      hint: 'e.g. +387 61 123 456',
-                      icon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
+                      controller: _descriptionController,
+                      label: 'Description (optional)',
+                      hint: 'e.g. Dry goods and beverage storage',
+                      icon: Icons.notes_outlined,
                     ),
                     const SizedBox(height: 20),
                     Container(

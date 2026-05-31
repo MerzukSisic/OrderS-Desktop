@@ -519,7 +519,7 @@ class _AddProcurementItemDialogState extends State<AddProcurementItemDialog> {
   final _unitCostController = TextEditingController();
   String? _selectedProductId;
   String? _selectedProductName;
-  int? _availableStock;
+  double? _availableStock;
   String? _stockUnit;
 
   @override

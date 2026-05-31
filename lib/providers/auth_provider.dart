@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rs2_desktop/core/api/api_client.dart';
 import 'package:rs2_desktop/core/constants/app_constants.dart';
 import 'package:rs2_desktop/core/errors/ui_error_mapper.dart';
-import 'package:rs2_desktop/core/services/api/api_service.dart';
 import 'package:rs2_desktop/core/services/api/auth_api_service.dart';
 import 'package:rs2_desktop/models/auth/auth_response.dart';
 import 'package:rs2_desktop/models/auth/user_model.dart';
@@ -13,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthProvider with ChangeNotifier {
   final AuthApiService _apiService = AuthApiService();
   final ApiClient _apiClient = ApiClient();
-  final ApiService _legacyApiService = ApiService();
 
   // State
   UserModel? _currentUser;
@@ -31,15 +29,16 @@ class AuthProvider with ChangeNotifier {
   bool get isAdmin => _currentUser?.role == AppConstants.roleAdmin;
   bool get isWaiter => _currentUser?.role == AppConstants.roleWaiter;
   bool get isBartender => _currentUser?.role == AppConstants.roleBartender;
+  bool get isKitchen => _currentUser?.role == AppConstants.roleKitchen;
 
-  // Storage keys - aligned with AppConstants and StorageService
+  // Storage keys - aligned with ApiClient/mobile.
   static const String _tokenKey = AppConstants.keyAccessToken; // 'access_token'
+  static const String _legacyTokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = AppConstants.keyUserData; // 'user_data'
 
   AuthProvider() {
     _apiClient.onUnauthorized = _handleUnauthorized;
-    _legacyApiService.onUnauthorized = _handleUnauthorized;
   }
 
   /// Initialize - Load saved credentials
@@ -48,15 +47,16 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedToken = prefs.getString(_tokenKey);
+      final savedToken =
+          prefs.getString(_tokenKey) ?? prefs.getString(_legacyTokenKey);
       final savedUserJson = prefs.getString(_userKey);
 
       if (savedToken != null && savedUserJson != null) {
         _token = savedToken;
         _apiClient.setToken(savedToken);
+        await prefs.setString(_tokenKey, savedToken);
+        await prefs.remove(_legacyTokenKey);
         _restoreCachedUser(savedUserJson);
-
-        await _legacyApiService.saveToken(savedToken);
 
         final response = await _apiService.validateToken(savedToken);
 
@@ -307,8 +307,6 @@ class AuthProvider with ChangeNotifier {
 
     _apiClient.setToken(_token);
 
-    await _legacyApiService.saveToken(_token!);
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, _token!);
     if (authResponse.refreshToken != null) {
@@ -325,10 +323,9 @@ class AuthProvider with ChangeNotifier {
     _isAuthenticated = false;
     _apiClient.clearToken();
 
-    await _legacyApiService.clearToken();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    await prefs.remove(_legacyTokenKey);
     await prefs.remove(_refreshTokenKey);
     await prefs.remove(_userKey);
 

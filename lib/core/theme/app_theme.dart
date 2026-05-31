@@ -22,6 +22,7 @@ class AppTheme {
 
       // Primary Color
       primaryColor: AppColors.primary,
+      canvasColor: AppColors.surfaceVariant,
       scaffoldBackgroundColor: AppColors.background,
 
       // App Bar Theme
@@ -151,6 +152,7 @@ class AppTheme {
         onError: AppColors.white,
       ),
 
+      canvasColor: AppColors.surfaceVariant,
       scaffoldBackgroundColor: AppColors.background,
 
       appBarTheme: const AppBarTheme(

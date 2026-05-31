@@ -57,8 +57,8 @@ class StoreProductItem extends Equatable {
   final String name;
   final String? description;
   final double purchasePrice;
-  final int currentStock;
-  final int minimumStock;
+  final double currentStock;
+  final double minimumStock;
   final String unit;
   final bool isLowStock;
   final DateTime lastRestocked;
@@ -85,8 +85,8 @@ class StoreProductItem extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String?,
       purchasePrice: (json['purchasePrice'] as num).toDouble(),
-      currentStock: json['currentStock'] as int,
-      minimumStock: json['minimumStock'] as int,
+      currentStock: (json['currentStock'] as num).toDouble(),
+      minimumStock: (json['minimumStock'] as num).toDouble(),
       unit: json['unit'] as String,
       isLowStock: json['isLowStock'] as bool? ?? false,
       lastRestocked: DateTime.parse(json['lastRestocked'] as String),

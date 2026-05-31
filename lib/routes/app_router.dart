@@ -20,10 +20,14 @@ import 'package:rs2_desktop/models/tables/table_model.dart';
 import 'package:rs2_desktop/models/inventory/store_model.dart';
 import 'package:rs2_desktop/models/inventory/store_product_model.dart';
 import 'package:rs2_desktop/models/orders/order_model.dart';
+import 'package:rs2_desktop/features/admin/auth/forgot_password_screen.dart';
+import 'package:rs2_desktop/features/admin/auth/reset_password_screen.dart';
 
 class AppRouter {
   // Auth Routes
   static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
 
   // Admin Main Routes (sa indexom)
   static const String adminDashboard = '/admin/dashboard';
@@ -87,6 +91,12 @@ class AppRouter {
       // Auth
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
+
+      case forgotPassword:
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+
+      case resetPassword:
+        return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
 
       // Main Admin Routes (sa sidebar)
       case adminDashboard:

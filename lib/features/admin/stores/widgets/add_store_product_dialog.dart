@@ -78,8 +78,12 @@ class _AddStoreProductDialogState extends State<AddStoreProductDialog> {
 
   Future<void> _handleAdd() async {
     if (_selected == null) return;
-    final currentStock = int.tryParse(_currentStockController.text.trim()) ?? 0;
-    final minimumStock = int.tryParse(_minimumStockController.text.trim()) ?? 0;
+    final currentStock =
+        double.tryParse(_currentStockController.text.trim().replaceAll(',', '.')) ??
+        0;
+    final minimumStock =
+        double.tryParse(_minimumStockController.text.trim().replaceAll(',', '.')) ??
+        0;
 
     setState(() => _saving = true);
     final provider = context.read<InventoryProvider>();

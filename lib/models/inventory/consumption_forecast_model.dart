@@ -1,7 +1,7 @@
 class ConsumptionForecastModel {
   final String storeProductId;
   final String storeProductName;
-  final int currentStock;
+  final double currentStock;
   final double averageDailyConsumption;
   final int estimatedDaysUntilDepletion;
   final bool needsReorder;
@@ -21,7 +21,7 @@ class ConsumptionForecastModel {
     return ConsumptionForecastModel(
       storeProductId: json['storeProductId'],
       storeProductName: json['storeProductName'],
-      currentStock: json['currentStock'],
+      currentStock: (json['currentStock'] as num).toDouble(),
       averageDailyConsumption: (json['averageDailyConsumption'] as num)
           .toDouble(),
       estimatedDaysUntilDepletion: json['estimatedDaysUntilDepletion'],

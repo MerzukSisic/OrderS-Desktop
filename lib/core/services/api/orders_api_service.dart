@@ -145,4 +145,14 @@ class OrdersApiService {
       data: {'status': status},
     );
   }
+
+  /// Archive order (Admin only)
+  Future<ApiResponse<void>> archiveOrder(String orderId) async {
+    return await _client.put('/orders/$orderId/archive');
+  }
+
+  /// Delete order (Admin only)
+  Future<ApiResponse<void>> deleteOrder(String orderId) async {
+    return await _client.delete('/orders/$orderId');
+  }
 }

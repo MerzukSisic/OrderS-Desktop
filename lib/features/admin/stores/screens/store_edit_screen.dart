@@ -21,7 +21,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
-  late final TextEditingController _phoneController;
+  late final TextEditingController _descriptionController;
   late bool _isExternal;
   bool _isSaving = false;
 
@@ -32,7 +32,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     _addressController = TextEditingController(
       text: widget.store.location ?? '',
     );
-    _phoneController = TextEditingController();
+    _descriptionController = TextEditingController(
+      text: widget.store.description ?? '',
+    );
     _isExternal = widget.store.isExternal;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -47,7 +49,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _phoneController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -64,9 +66,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         address: _addressController.text.trim().isEmpty
             ? null
             : _addressController.text.trim(),
-        phoneNumber: _phoneController.text.trim().isEmpty
+        description: _descriptionController.text.trim().isEmpty
             ? null
-            : _phoneController.text.trim(),
+            : _descriptionController.text.trim(),
         isExternal: _isExternal,
       );
       if (!mounted) return;
@@ -201,11 +203,10 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                         ),
                         const SizedBox(height: 20),
                         _buildTextField(
-                          controller: _phoneController,
-                          label: 'Phone (optional)',
-                          hint: 'Leave empty to keep current',
-                          icon: Icons.phone_outlined,
-                          keyboardType: TextInputType.phone,
+                          controller: _descriptionController,
+                          label: 'Description (optional)',
+                          hint: 'e.g. Dry goods and beverage storage',
+                          icon: Icons.notes_outlined,
                         ),
                         const SizedBox(height: 20),
                         Container(
